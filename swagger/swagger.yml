@@ -1,0 +1,515 @@
+openapi: 3.0.0
+info:
+  description: Baby feeding management platform
+  version: 1.0.0
+  title: Hungry Baby
+  contact:
+    email: ivan.satyaputra@amartha.com
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+
+tags:
+- name: Auth
+  description: Authentication Api
+- name: User
+  description: User Api
+- name: UserChild
+  description: Child Api
+
+paths:
+  /auth/login:
+    post:
+      tags:
+      - Auth
+      summary: Login users
+      description: |
+        Login api using email/gmail
+      requestBody:
+        description: Optional description in *Markdown*
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Login'
+      responses:
+        200:
+          description: JWT Token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status_code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: 'OK'
+                  data:
+                    $ref: '#/components/schemas/JWT'
+        400:
+          description: invalid input, object invalid
+  /auth/register:
+    post:
+      tags:
+      - Auth
+      summary: Register users using email
+      description: |
+        Using email and password to sign up, need to verify email later
+      requestBody:
+        description: Optional description in *Markdown*
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Register'
+      responses:
+        200:
+          description: A list of users
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status_code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: 'OK'
+                  data:
+                    $ref: '#/components/schemas/JWT'
+        400:
+          description: Bad Request
+  /user/profile:
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+      - User
+      summary: Retrive data user by token
+      description: |
+        get user data
+      responses:
+        200:
+          description: A list of users
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status_code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: 'OK'
+                  data:
+                    $ref: '#/components/schemas/User'
+        400:
+          description: Bad Request
+    put:
+      security:
+        - bearerAuth: []
+      tags:
+      - User
+      summary: Edit data user by token
+      description: |
+        post data
+      requestBody:
+        description: Optional description in *Markdown*
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestUser'
+      responses:
+        200:
+          description: A list of users
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status_code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: 'OK'
+                  data:
+                    $ref: '#/components/schemas/User'
+        400:
+          description: Bad Request
+
+  /userChild:
+   get:
+    security:
+        - bearerAuth: []
+    tags:
+    - UserChild
+    summary: Retrive data Child
+    responses:
+      200:
+        description: A list of child
+        content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status_code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: 'OK'
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/UserChild'
+      400:
+        description: Bad Request
+   post:
+    security:
+        - bearerAuth: []
+    tags:
+    - UserChild
+    summary: Save Data Child
+    requestBody:
+        description: Optional description in *Markdown*
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserChildRequest'
+    responses:
+      201:
+        description: Created child
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status_code:
+                  type: integer
+                  example: 201
+                message:
+                  type: string
+                  example: 'OK'
+                data:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 1
+      400:
+        description: Bad Request
+  /userChild/{id}:
+    get:
+     security:
+        - bearerAuth: []
+     tags:
+      - UserChild
+     summary: Retrive data Child by ID
+     parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: Get detail child data by ID
+     responses:
+      200:
+        description: 1 child data
+        content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status_code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: 'OK'
+                  data:
+                    type: object
+                    $ref: '#/components/schemas/UserChild'
+      400:
+        description: Bad Request
+    put:
+     security:
+        - bearerAuth: []
+     tags:
+      - UserChild
+     summary: Update data Child by ID
+     parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: Edit child data by ID
+     requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserChildRequest'
+     responses:
+      200:
+        description: A list of child
+        content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status_code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: 'OK'
+                  data:
+                    type: object
+                    $ref: '#/components/schemas/UserChild'
+      400:
+        description: Bad Request
+    delete:
+     security:
+        - bearerAuth: []
+     tags:
+      - UserChild
+     summary: Delete Child by ID
+     parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: Deleted id
+     responses:
+      200:
+        description: A list of child
+        content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status_code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: 'OK'
+                  data:
+                    type: object
+      400:
+        description: Bad Request
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Login:
+      type: object
+      required:
+      - type
+      - email
+      - password
+      properties:
+        type:
+          type: string
+          example: email
+          enum:
+            - email
+            - gmail
+        email:
+          type: string
+          example: test@amartha.com
+        password:
+          type: string
+          example: jasdv00a9svdj
+          description: encrypted password AES256-CBC for type "email" and google access token for type "gmail"
+    Register:
+      type: object
+      required:
+      - email
+      - password
+      properties:
+        email:
+          type: string
+          example: test@amartha.com
+        password:
+          type: string
+          example: jasdv00a9svdj
+          description: encrypted password AES256-CBC for type "email" and google access token for type "gmail"
+    JWT:
+      type: object
+      required:
+      - token
+      - expire_token
+      - refresh_token
+      - expire_refresh_token
+      properties:
+        token:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MzA3Njc5ODAsImp0aSI6ImV5SmhiR2NpT2lKU1UwRXhYelVpTENKbGJtTWlPaUpCTVRJNFEwSkRMVWhUTWpVMkluMC5DWkUyd2piV1ZWczhVakhmMEpWVTNzYXloal9kUl95anJhVGFobU5mdE10Q0IyN2t1OTVMMXFDQnZqZHc3Q3VMX0VZVnFHUXdGaEdlUTJ
+        expire_token:
+          type: string
+          example: 2021-09-01T00:00:00Z
+          format: date-time
+        refresh_token:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MzA3Njc5ODAsImp0aSI6ImV5SmhiR2NpT2lKU1UwRXhYelVpTENKbGJtTWlPaUpCTVRJNFEwSkRMVWhUTWpVMkluMC5DWkUyd2piV1ZWczhVakhmMEpWVTNzYXloal9kUl95anJhVGFobU5mdE10Q0IyN2t1OTVMMXFDQnZqZHc3Q3VMX0VZVnFHUXdGaEdlUTJ
+        expire_refresh_token:
+          type: string
+          example: 2021-10-01T00:00:00Z
+          format: date-time
+    RequestUser:
+      type: object
+      required:
+      - name
+      properties:
+        name:
+          type: string
+          example: user1
+        profile_image_id:
+          type: integer
+          example: 1
+        gender:
+          type: string
+          example: M
+        phone:
+          type: string
+          example: 62-82232189987
+        city_id:
+          type: integer
+          example: 1
+        address:
+          type: string
+          example: address
+        settings:
+          type: object
+          properties:
+            use_notification:
+              type: boolean
+              example: true
+        status:
+          type: boolean
+          example: true
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        code:
+          type: string
+          example: ABC001
+        name:
+          type: string
+          example: user1
+        profile_image_id:
+          type: integer
+          example: 1
+        profile_image_url:
+          type: string
+          example: https://s3.hungrybaby.com/image1.png
+        gender:
+          type: string
+          example: M
+        phone:
+          type: string
+          example: 62-82232189987
+        city_id:
+          type: integer
+          example: 1
+        city_name:
+          type: string
+          example: city
+        address:
+          type: string
+          example: address
+        settings:
+          type: object
+          properties:
+            use_notification:
+              type: boolean
+              example: true
+        status:
+          type: boolean
+          example: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    UserChildRequest:
+      type: object
+      required:
+      - user_id
+      - name
+      properties:
+        user_id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Child1
+        gender:
+          type: string
+          example: M
+        birth_date:
+          type: string
+          example: "2020-04-25"
+        birth_length:
+          type: number
+          example: 50.0
+        birth_weight:
+          type: number
+          example: 3.0
+        head_circumference:
+          type: number
+          example: 35.0
+    UserChild:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        user_id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Child1
+        gender:
+          type: string
+          example: M
+        birth_date:
+          type: string
+          example: "2020-04-25"
+        birth_length:
+          type: number
+          example: 50.0
+        birth_weight:
+          type: number
+          example: 3.0
+        head_circumference:
+          type: number
+          example: 35.0
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+security:
+  - bearerAuth: []

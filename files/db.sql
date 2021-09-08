@@ -142,6 +142,7 @@ CREATE TABLE IF NOT EXISTS user_child_meals (
     name TEXT NOT NULL CHECK (char_length(name) <= 100),
     suggestion_quantity NUMERIC(20,3) NOT NULL DEFAULT 0,
 	quantity NUMERIC(20,3) NOT NULL DEFAULT 0,
+	unit TEXT NOT NULL CHECK (char_length(unit) <= 20) DEFAULT '',
 	finish_at TIMESTAMP WITH TIME ZONE,
 	status TEXT NOT NULL CHECK (char_length(status) <= 20) DEFAULT '',
 	created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,

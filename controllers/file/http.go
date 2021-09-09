@@ -1,14 +1,13 @@
 package file
 
 import (
-	"errors"
+	"context"
 	"hungry-baby/businesses/file"
 	controller "hungry-baby/controllers"
 	"hungry-baby/controllers/file/request"
 	"hungry-baby/controllers/file/response"
 	"net/http"
 	"strconv"
-	"strings"
 
 	echo "github.com/labstack/echo/v4"
 )
@@ -23,27 +22,20 @@ func NewFileController(fileUC file.Usecase) *FileController {
 	}
 }
 
-func (ctrl *FileController) FindAll(c echo.Context) error {
-	ctx := c.Request().Context()
+func (ctrl *FileController) FindByID(c echo.Context) error {
+	ctx := c.Get("ctx").(context.Context)
 
-	page, _ := strconv.Atoi(c.QueryParam("page"))
-	perpage, _ := strconv.Atoi(c.QueryParam("limit"))
-
-	resp, total, err := ctrl.fileUseCase.FindAll(ctx, page, perpage)
+	id, _ := strconv.Atoi(c.Param("id"))
+	resp, err := ctrl.fileUseCase.FindByID(ctx, id)
 	if err != nil {
 		return controller.NewErrorResponse(c, http.StatusInternalServerError, err)
 	}
 
-	responseController := []response.File{}
-	for _, value := range resp {
-		responseController = append(responseController, response.FromDomain(value))
-	}
-
-	return controller.NewSuccessResponse(c, responseController, total)
+	return controller.NewSuccessResponse(c, response.FromDomain(resp), 0)
 }
 
 func (ctrl *FileController) Store(c echo.Context) error {
-	ctx := c.Request().Context()
+	ctx := c.Get("ctx").(context.Context)
 
 	req := request.File{}
 	if err := c.Bind(&req); err != nil {
@@ -58,26 +50,19 @@ func (ctrl *FileController) Store(c echo.Context) error {
 	return controller.NewSuccessResponse(c, response.FromDomain(resp), 0)
 }
 
-func (ctrl *FileController) Update(c echo.Context) error {
-	ctx := c.Request().Context()
+func (ctrl *FileController) Upload(c echo.Context) error {
+	ctx := c.Get("ctx").(context.Context)
 
-	id := c.Param("id")
-	if strings.TrimSpace(id) == "" {
-		return controller.NewErrorResponse(c, http.StatusBadRequest, errors.New("missing required id"))
-	}
+	// Read file type
+	fileType := c.FormValue("type")
 
-	req := request.File{}
-	if err := c.Bind(&req); err != nil {
-		return controller.NewErrorResponse(c, http.StatusBadRequest, err)
-	}
-
-	domainReq := req.ToDomain()
-	idInt, err := strconv.Atoi(id)
+	// Upload file to local temporary
+	fileHeader, err := c.FormFile("file")
 	if err != nil {
-		return controller.NewErrorResponse(c, http.StatusBadRequest, errors.New("missing required id"))
+		return controller.NewErrorResponse(c, http.StatusInternalServerError, err)
 	}
-	domainReq.ID = idInt
-	resp, err := ctrl.fileUseCase.Update(ctx, domainReq)
+
+	resp, err := ctrl.fileUseCase.Upload(ctx, fileType, fileType+"/"+strconv.Itoa(ctx.Value("userID").(int)), fileHeader)
 	if err != nil {
 		return controller.NewErrorResponse(c, http.StatusInternalServerError, err)
 	}
@@ -86,7 +71,7 @@ func (ctrl *FileController) Update(c echo.Context) error {
 }
 
 func (ctrl *FileController) Delete(c echo.Context) error {
-	ctx := c.Request().Context()
+	ctx := c.Get("ctx").(context.Context)
 
 	req := request.File{}
 	domainReq := req.ToDomain()

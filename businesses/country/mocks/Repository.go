@@ -4,7 +4,7 @@ package mocks
 
 import (
 	context "context"
-	category "hungry-baby/businesses/category"
+	country "hungry-baby/businesses/country"
 
 	mock "github.com/stretchr/testify/mock"
 )
@@ -15,15 +15,15 @@ type Repository struct {
 }
 
 // Find provides a mock function with given fields: ctx, active
-func (_m *Repository) Find(ctx context.Context, active string) ([]category.Domain, error) {
+func (_m *Repository) Find(ctx context.Context, active string) ([]country.Domain, error) {
 	ret := _m.Called(ctx, active)
 
-	var r0 []category.Domain
-	if rf, ok := ret.Get(0).(func(context.Context, string) []category.Domain); ok {
+	var r0 []country.Domain
+	if rf, ok := ret.Get(0).(func(context.Context, string) []country.Domain); ok {
 		r0 = rf(ctx, active)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]category.Domain)
+			r0 = ret.Get(0).([]country.Domain)
 		}
 	}
 
@@ -38,14 +38,14 @@ func (_m *Repository) Find(ctx context.Context, active string) ([]category.Domai
 }
 
 // FindByID provides a mock function with given fields: id
-func (_m *Repository) FindByID(id int) (category.Domain, error) {
+func (_m *Repository) FindByID(id int) (country.Domain, error) {
 	ret := _m.Called(id)
 
-	var r0 category.Domain
-	if rf, ok := ret.Get(0).(func(int) category.Domain); ok {
+	var r0 country.Domain
+	if rf, ok := ret.Get(0).(func(int) country.Domain); ok {
 		r0 = rf(id)
 	} else {
-		r0 = ret.Get(0).(category.Domain)
+		r0 = ret.Get(0).(country.Domain)
 	}
 
 	var r1 error

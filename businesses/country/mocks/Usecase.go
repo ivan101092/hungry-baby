@@ -4,7 +4,7 @@ package mocks
 
 import (
 	context "context"
-	category "hungry-baby/businesses/category"
+	country "hungry-baby/businesses/country"
 
 	mock "github.com/stretchr/testify/mock"
 )
@@ -15,15 +15,15 @@ type Usecase struct {
 }
 
 // GetAll provides a mock function with given fields: ctx
-func (_m *Usecase) GetAll(ctx context.Context) ([]category.Domain, error) {
+func (_m *Usecase) GetAll(ctx context.Context) ([]country.Domain, error) {
 	ret := _m.Called(ctx)
 
-	var r0 []category.Domain
-	if rf, ok := ret.Get(0).(func(context.Context) []category.Domain); ok {
+	var r0 []country.Domain
+	if rf, ok := ret.Get(0).(func(context.Context) []country.Domain); ok {
 		r0 = rf(ctx)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]category.Domain)
+			r0 = ret.Get(0).([]country.Domain)
 		}
 	}
 
@@ -38,15 +38,15 @@ func (_m *Usecase) GetAll(ctx context.Context) ([]category.Domain, error) {
 }
 
 // GetByActive provides a mock function with given fields: ctx, active
-func (_m *Usecase) GetByActive(ctx context.Context, active bool) ([]category.Domain, error) {
+func (_m *Usecase) GetByActive(ctx context.Context, active bool) ([]country.Domain, error) {
 	ret := _m.Called(ctx, active)
 
-	var r0 []category.Domain
-	if rf, ok := ret.Get(0).(func(context.Context, bool) []category.Domain); ok {
+	var r0 []country.Domain
+	if rf, ok := ret.Get(0).(func(context.Context, bool) []country.Domain); ok {
 		r0 = rf(ctx, active)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]category.Domain)
+			r0 = ret.Get(0).([]country.Domain)
 		}
 	}
 
@@ -61,14 +61,14 @@ func (_m *Usecase) GetByActive(ctx context.Context, active bool) ([]category.Dom
 }
 
 // GetByID provides a mock function with given fields: ctx, id
-func (_m *Usecase) GetByID(ctx context.Context, id int) (category.Domain, error) {
+func (_m *Usecase) GetByID(ctx context.Context, id int) (country.Domain, error) {
 	ret := _m.Called(ctx, id)
 
-	var r0 category.Domain
-	if rf, ok := ret.Get(0).(func(context.Context, int) category.Domain); ok {
+	var r0 country.Domain
+	if rf, ok := ret.Get(0).(func(context.Context, int) country.Domain); ok {
 		r0 = rf(ctx, id)
 	} else {
-		r0 = ret.Get(0).(category.Domain)
+		r0 = ret.Get(0).(country.Domain)
 	}
 
 	var r1 error

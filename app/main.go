@@ -3,10 +3,14 @@ package main
 import (
 	_dbFactory "hungry-baby/drivers/databases"
 
-	_categoryUsecase "hungry-baby/businesses/category"
-	_categoryController "hungry-baby/controllers/category"
-	_categoryRepo "hungry-baby/drivers/databases/category"
+	_countryUsecase "hungry-baby/businesses/country"
+	_countryController "hungry-baby/controllers/country"
+	_countryRepo "hungry-baby/drivers/databases/country"
 
+	_fileUsecase "hungry-baby/businesses/file"
+	_fileController "hungry-baby/controllers/file"
+
+	_minio "hungry-baby/drivers/minio"
 	_dbDriver "hungry-baby/drivers/postgres"
 
 	_config "hungry-baby/app/config"
@@ -23,7 +27,7 @@ import (
 
 func dbMigrate(db *gorm.DB) {
 	db.AutoMigrate(
-		&_categoryRepo.Category{},
+		&_countryRepo.Country{},
 	)
 }
 
@@ -44,17 +48,36 @@ func main() {
 		ExpiresDuration: viper.GetInt(`jwt.expired`),
 	}
 
+	configMinio := _minio.Connection{
+		AccessKey: configApp.Minio.AccessKey,
+		SecretKey: configApp.Minio.SecretKey,
+		UseSSL:    configApp.Minio.UseSSL,
+		BaseURL:   configApp.Minio.Host,
+		Duration:  configApp.Minio.Duration,
+		Bucket:    configApp.Minio.DefaultBucket,
+	}
+	minioClient, err := configMinio.InitClient()
+	if err != nil {
+		panic(err)
+	}
+	connMinio := _minio.NewMinioModel(minioClient, configMinio.Bucket)
+
 	timeoutContext := time.Duration(viper.GetInt("context.timeout")) * time.Second
 
 	e := echo.New()
 
-	categoryRepo := _dbFactory.NewCategoryRepository(db)
-	categoryUsecase := _categoryUsecase.NewCategoryUsecase(timeoutContext, categoryRepo)
-	categoryCtrl := _categoryController.NewCategoryController(categoryUsecase)
+	countryRepo := _dbFactory.NewCountryRepository(db)
+	countryUsecase := _countryUsecase.NewCountryUsecase(timeoutContext, countryRepo)
+	countryCtrl := _countryController.NewCountryController(countryUsecase)
+
+	fileRepo := _dbFactory.NewFileRepository(db)
+	fileUsecase := _fileUsecase.NewFileUsecase(timeoutContext, fileRepo, connMinio)
+	fileCtrl := _fileController.NewFileController(fileUsecase)
 
 	routesInit := _routes.ControllerList{
-		JWTMiddleware:      configJWT.Init(),
-		CategoryController: *categoryCtrl,
+		JWTMiddleware:     configJWT.Init(),
+		FileController:    *fileCtrl,
+		CountryController: *countryCtrl,
 	}
 	routesInit.RouteRegister(e)
 

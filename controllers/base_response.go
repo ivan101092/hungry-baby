@@ -8,7 +8,7 @@ import (
 
 type BaseResponse struct {
 	Meta struct {
-		Status   int      `json:"rc"`
+		Status   int      `json:"status"`
 		Message  string   `json:"message"`
 		Messages []string `json:"messages,omitempty"`
 		Total    int      `json:"total,omitempty"`

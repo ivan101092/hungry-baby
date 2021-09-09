@@ -3,7 +3,6 @@ package file_test
 import (
 	"context"
 	"database/sql"
-	"errors"
 	_fileRepo "hungry-baby/drivers/databases/file"
 	"testing"
 
@@ -31,7 +30,7 @@ func SetupSuite(t *testing.T) *sql.DB {
 	//SETUP with actual DB
 	configApp := _config.GetConfig()
 	configDB := _dbDriver.ConfigDB{
-		DB_Filename: configApp.Database.File,
+		DB_Username: configApp.Database.User,
 		DB_Password: configApp.Database.Pass,
 		DB_Host:     configApp.Database.Host,
 		DB_Port:     configApp.Database.Port,
@@ -67,44 +66,40 @@ func tearUp(t *testing.T) (func(t *testing.T, db *sql.DB), *sql.DB) {
 	db := SetupSuite(t)
 	//MIGRATE
 	s.DBConn.AutoMigrate(
-		&_fileRepo.Category{},
+		&_fileRepo.File{},
 	)
 	//SEED Database
 	seeder(s.DBConn)
 
 	return func(t *testing.T, db *sql.DB) {
 		//DROP table after test
-		s.DBConn.Migrator().DropTable(&_fileRepo.Category{})
+		s.DBConn.Migrator().DropTable(&_fileRepo.File{})
 		// CLOSE the mock db connection
 		db.Close()
 	}, db
 }
 
 func seeder(db *gorm.DB) {
-	var categories = []_fileRepo.Category{
+	var categories = []_fileRepo.File{
 		{
-			Title:       "Sport",
-			Description: "a pack of sport news",
-			Active:      true,
-			Archive:     false,
+			Type:       "user_profile",
+			URL:        "user_profile/1.jpg",
+			UserUpload: "1",
 		},
 		{
-			Title:       "Woman",
-			Description: "when woman need a exclusive needs",
-			Active:      true,
-			Archive:     false,
+			Type:       "user_profile",
+			URL:        "user_profile/2.jpg",
+			UserUpload: "1",
 		},
 		{
-			Title:       "2019 Indonesian Election",
-			Description: "hot list about Election on Indonesia",
-			Active:      false,
-			Archive:     false,
+			Type:       "user_profile",
+			URL:        "user_profile/3.jpg",
+			UserUpload: "1",
 		},
 		{
-			Title:       "Terorism",
-			Description: "all about terorism in worldwide",
-			Active:      true,
-			Archive:     true,
+			Type:       "user_profile",
+			URL:        "user_profile/4.jpg",
+			UserUpload: "",
 		},
 	}
 
@@ -117,66 +112,17 @@ func TestFindByID(t *testing.T) {
 
 	t.Run("test case 1 : valid case", func(t *testing.T) {
 		id := 1
-		result, err := s.Repository.FindByID(id)
+		result, err := s.Repository.FindByID(context.Background(), id)
 
 		assert.Nil(t, err)
 		assert.Equal(t, id, result.ID)
-		assert.Equal(t, result.Title, "Sport")
+		assert.Equal(t, result.Type, "Sport")
 	})
 
 	t.Run("test case 2 : invalid case", func(t *testing.T) {
-		result, err := s.Repository.FindByID(10)
+		result, err := s.Repository.FindByID(context.Background(), 10)
 
 		assert.NotNil(t, err)
 		assert.Equal(t, 0, result.ID)
-	})
-}
-
-func TestFind(t *testing.T) {
-	tearDown, db := tearUp(t)
-	defer tearDown(t, db)
-
-	t.Run("test case 1 : valid case - all data", func(t *testing.T) {
-		result, err := s.Repository.Find(context.Background(), "")
-
-		assert.Nil(t, err)
-		assert.Equal(t, 3, len(result))
-		for _, val := range result {
-			assert.NotEqual(t, "Terorism", val.Title)
-		}
-	})
-
-	t.Run("test case 2 : valid case - active", func(t *testing.T) {
-		result, err := s.Repository.Find(context.Background(), "true")
-		assert.Nil(t, err)
-		assert.Equal(t, 2, len(result))
-		for _, val := range result {
-			assert.NotEqual(t, "Terorism", val.Title)
-		}
-	})
-
-	t.Run("test case 3 : valid case - notActive", func(t *testing.T) {
-		result, err := s.Repository.Find(context.Background(), "false")
-		assert.Nil(t, err)
-		assert.Equal(t, 1, len(result))
-		assert.Equal(t, "2019 Indonesian Election", result[0].Title)
-	})
-}
-
-func TestFindWithMock(t *testing.T) {
-	tearDown, db := tearUp(t)
-	defer tearDown(t, db)
-
-	t.Run("test mock case 1 : invalid case", func(t *testing.T) {
-		errorQuery := "mock db error"
-		s.Mock.ExpectQuery("SELECT").WithArgs(false, false).WillReturnError(errors.New(errorQuery))
-
-		_, err := s.RepositoryMock.Find(context.Background(), "false")
-		assert.NotNil(t, err)
-		assert.EqualError(t, err, errorQuery)
-
-		if err := s.Mock.ExpectationsWereMet(); err != nil {
-			t.Errorf("there were unfulfilled expections: %s", err)
-		}
 	})
 }

@@ -23,6 +23,15 @@ type Config struct {
 		Secret  string
 		Expired int
 	} `mapstructure:"jwt"`
+	Minio struct {
+		Host          string
+		AccessKey     string
+		SecretKey     string
+		UseSSL        bool
+		BaseURL       string
+		Duration      int
+		DefaultBucket string
+	}
 }
 
 func GetConfig() Config {

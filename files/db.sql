@@ -107,6 +107,7 @@ CREATE TABLE IF NOT EXISTS meal_plans (
     name TEXT NOT NULL CHECK (char_length(name) <= 100),
     min_age NUMERIC(20,3) NOT NULL DEFAULT 0,
 	max_age NUMERIC(20,3) NOT NULL DEFAULT 0,
+	interval NUMERIC(20,3) NOT NULL DEFAULT 0, -- in minutes
 	suggestion_quantity NUMERIC(20,3) NOT NULL DEFAULT 0,
     unit TEXT NOT NULL CHECK (char_length(unit) <= 20) DEFAULT '',
 	status TEXT NOT NULL CHECK (char_length(status) <= 20) DEFAULT '',
@@ -143,8 +144,9 @@ CREATE TABLE IF NOT EXISTS user_child_meals (
     suggestion_quantity NUMERIC(20,3) NOT NULL DEFAULT 0,
 	quantity NUMERIC(20,3) NOT NULL DEFAULT 0,
 	unit TEXT NOT NULL CHECK (char_length(unit) <= 20) DEFAULT '',
+	scheduled_at TIMESTAMP WITH TIME ZONE,
 	finish_at TIMESTAMP WITH TIME ZONE,
-	status TEXT NOT NULL CHECK (char_length(status) <= 20) DEFAULT '',
+	status TEXT NOT NULL CHECK (char_length(status) <= 20) DEFAULT '', -- pending, done
 	created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP WITH TIME ZONE

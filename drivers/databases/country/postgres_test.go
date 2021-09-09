@@ -1,10 +1,10 @@
-package category_test
+package country_test
 
 import (
 	"context"
 	"database/sql"
 	"errors"
-	_categoryRepo "hungry-baby/drivers/databases/category"
+	_countryRepo "hungry-baby/drivers/databases/country"
 	"testing"
 
 	_config "hungry-baby/app/config"
@@ -18,11 +18,11 @@ import (
 
 type SQLTest struct {
 	DBConn     *gorm.DB
-	Repository *_categoryRepo.PostgresRepository
+	Repository *_countryRepo.PostgresRepository
 
 	DBMock         *gorm.DB
 	Mock           sqlmock.Sqlmock
-	RepositoryMock *_categoryRepo.PostgresRepository
+	RepositoryMock *_countryRepo.PostgresRepository
 }
 
 var s SQLTest
@@ -39,7 +39,7 @@ func SetupSuite(t *testing.T) *sql.DB {
 	}
 
 	s.DBConn = configDB.InitialDB()
-	s.Repository = _categoryRepo.NewPostgresRepository(s.DBConn)
+	s.Repository = _countryRepo.NewPostgresRepository(s.DBConn)
 
 	//SETUP with mock DB for check the error
 	db, mock, err := sqlmock.New()
@@ -56,7 +56,7 @@ func SetupSuite(t *testing.T) *sql.DB {
 	)
 	assert.Nil(t, err)
 
-	s.RepositoryMock = _categoryRepo.NewPostgresRepository(s.DBMock)
+	s.RepositoryMock = _countryRepo.NewPostgresRepository(s.DBMock)
 
 	//RETURN dbconnection to close after test
 	return db
@@ -67,44 +67,40 @@ func tearUp(t *testing.T) (func(t *testing.T, db *sql.DB), *sql.DB) {
 	db := SetupSuite(t)
 	//MIGRATE
 	s.DBConn.AutoMigrate(
-		&_categoryRepo.Category{},
+		&_countryRepo.Country{},
 	)
 	//SEED Database
 	seeder(s.DBConn)
 
 	return func(t *testing.T, db *sql.DB) {
 		//DROP table after test
-		s.DBConn.Migrator().DropTable(&_categoryRepo.Category{})
+		s.DBConn.Migrator().DropTable(&_countryRepo.Country{})
 		// CLOSE the mock db connection
 		db.Close()
 	}, db
 }
 
 func seeder(db *gorm.DB) {
-	var categories = []_categoryRepo.Category{
+	var categories = []_countryRepo.Country{
 		{
-			Title:       "Sport",
-			Description: "a pack of sport news",
-			Active:      true,
-			Archive:     false,
+			CountryCode: "user_procountry",
+			Name:        "user_procountry/1.jpg",
+			Status:      true,
 		},
 		{
-			Title:       "Woman",
-			Description: "when woman need a exclusive needs",
-			Active:      true,
-			Archive:     false,
+			CountryCode: "user_procountry",
+			Name:        "user_procountry/2.jpg",
+			Status:      true,
 		},
 		{
-			Title:       "2019 Indonesian Election",
-			Description: "hot list about Election on Indonesia",
-			Active:      false,
-			Archive:     false,
+			CountryCode: "user_procountry",
+			Name:        "user_procountry/3.jpg",
+			Status:      true,
 		},
 		{
-			Title:       "Terorism",
-			Description: "all about terorism in worldwide",
-			Active:      true,
-			Archive:     true,
+			CountryCode: "user_procountry",
+			Name:        "user_procountry/4.jpg",
+			Status:      true,
 		},
 	}
 
@@ -117,15 +113,15 @@ func TestFindByID(t *testing.T) {
 
 	t.Run("test case 1 : valid case", func(t *testing.T) {
 		id := 1
-		result, err := s.Repository.FindByID(id)
+		result, err := s.Repository.FindByID(context.Background(), id, "true")
 
 		assert.Nil(t, err)
 		assert.Equal(t, id, result.ID)
-		assert.Equal(t, result.Title, "Sport")
+		assert.Equal(t, result.CountryCode, "Sport")
 	})
 
 	t.Run("test case 2 : invalid case", func(t *testing.T) {
-		result, err := s.Repository.FindByID(10)
+		result, err := s.Repository.FindByID(context.Background(), 10, "true")
 
 		assert.NotNil(t, err)
 		assert.Equal(t, 0, result.ID)
@@ -137,29 +133,13 @@ func TestFind(t *testing.T) {
 	defer tearDown(t, db)
 
 	t.Run("test case 1 : valid case - all data", func(t *testing.T) {
-		result, err := s.Repository.Find(context.Background(), "")
+		result, err := s.Repository.FindAll(context.Background(), "", "true")
 
 		assert.Nil(t, err)
 		assert.Equal(t, 3, len(result))
 		for _, val := range result {
-			assert.NotEqual(t, "Terorism", val.Title)
+			assert.NotEqual(t, "Terorism", val.CountryCode)
 		}
-	})
-
-	t.Run("test case 2 : valid case - active", func(t *testing.T) {
-		result, err := s.Repository.Find(context.Background(), "true")
-		assert.Nil(t, err)
-		assert.Equal(t, 2, len(result))
-		for _, val := range result {
-			assert.NotEqual(t, "Terorism", val.Title)
-		}
-	})
-
-	t.Run("test case 3 : valid case - notActive", func(t *testing.T) {
-		result, err := s.Repository.Find(context.Background(), "false")
-		assert.Nil(t, err)
-		assert.Equal(t, 1, len(result))
-		assert.Equal(t, "2019 Indonesian Election", result[0].Title)
 	})
 }
 
@@ -171,7 +151,7 @@ func TestFindWithMock(t *testing.T) {
 		errorQuery := "mock db error"
 		s.Mock.ExpectQuery("SELECT").WithArgs(false, false).WillReturnError(errors.New(errorQuery))
 
-		_, err := s.RepositoryMock.Find(context.Background(), "false")
+		_, err := s.RepositoryMock.FindAll(context.Background(), "", "true")
 		assert.NotNil(t, err)
 		assert.EqualError(t, err, errorQuery)
 

@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"context"
 	"errors"
 	controller "hungry-baby/controllers"
 	"net/http"
@@ -9,6 +10,7 @@ import (
 	"github.com/golang-jwt/jwt"
 	echo "github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/spf13/cast"
 )
 
 type JwtCustomClaims struct {
@@ -64,6 +66,22 @@ func RoleValidation(role string) echo.MiddlewareFunc {
 			} else {
 				return controller.NewErrorResponse(c, http.StatusForbidden, errors.New("forbidden roles"))
 			}
+		}
+	}
+}
+
+// LoadClaims ...
+func LoadClaims(config middleware.JWTConfig) echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			user := c.Get("user").(*jwt.Token)
+			claims := user.Claims.(*JwtCustomClaims)
+
+			ctx := context.Background()
+			ctx = context.WithValue(ctx, "userID", cast.ToInt(claims.Id))
+			c.Set("ctx", ctx)
+
+			return next(c)
 		}
 	}
 }

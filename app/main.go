@@ -1,14 +1,20 @@
 package main
 
 import (
+	"fmt"
 	_dbFactory "hungry-baby/drivers/databases"
-
-	_countryUsecase "hungry-baby/businesses/country"
-	_countryController "hungry-baby/controllers/country"
-	_countryRepo "hungry-baby/drivers/databases/country"
 
 	_fileUsecase "hungry-baby/businesses/file"
 	_fileController "hungry-baby/controllers/file"
+
+	_countryUsecase "hungry-baby/businesses/country"
+	_countryController "hungry-baby/controllers/country"
+
+	_provinceUsecase "hungry-baby/businesses/province"
+	_provinceController "hungry-baby/controllers/province"
+
+	_cityUsecase "hungry-baby/businesses/city"
+	_cityController "hungry-baby/controllers/city"
 
 	_minio "hungry-baby/drivers/minio"
 	_dbDriver "hungry-baby/drivers/postgres"
@@ -26,9 +32,7 @@ import (
 )
 
 func dbMigrate(db *gorm.DB) {
-	db.AutoMigrate(
-		&_countryRepo.Country{},
-	)
+	db.AutoMigrate()
 }
 
 func main() {
@@ -66,20 +70,32 @@ func main() {
 
 	e := echo.New()
 
-	countryRepo := _dbFactory.NewCountryRepository(db)
-	countryUsecase := _countryUsecase.NewCountryUsecase(timeoutContext, countryRepo)
-	countryCtrl := _countryController.NewCountryController(countryUsecase)
-
 	fileRepo := _dbFactory.NewFileRepository(db)
 	fileUsecase := _fileUsecase.NewFileUsecase(timeoutContext, fileRepo, connMinio)
 	fileCtrl := _fileController.NewFileController(fileUsecase)
 
+	countryRepo := _dbFactory.NewCountryRepository(db)
+	countryUsecase := _countryUsecase.NewCountryUsecase(timeoutContext, countryRepo)
+	countryCtrl := _countryController.NewCountryController(countryUsecase)
+
+	provinceRepo := _dbFactory.NewProvinceRepository(db)
+	provinceUsecase := _provinceUsecase.NewProvinceUsecase(timeoutContext, provinceRepo)
+	provinceCtrl := _provinceController.NewProvinceController(provinceUsecase)
+
+	cityRepo := _dbFactory.NewCityRepository(db)
+	cityUsecase := _cityUsecase.NewCityUsecase(timeoutContext, cityRepo)
+	cityCtrl := _cityController.NewCityController(cityUsecase)
+
 	routesInit := _routes.ControllerList{
-		JWTMiddleware:     configJWT.Init(),
-		FileController:    *fileCtrl,
-		CountryController: *countryCtrl,
+		JWTMiddleware:      configJWT.Init(),
+		FileController:     *fileCtrl,
+		CountryController:  *countryCtrl,
+		ProvinceController: *provinceCtrl,
+		CityController:     *cityCtrl,
 	}
 	routesInit.RouteRegister(e)
+
+	fmt.Println(configJWT.GenerateToken(1))
 
 	log.Fatal(e.Start(viper.GetString("server.address")))
 }

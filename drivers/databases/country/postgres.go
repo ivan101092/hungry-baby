@@ -2,6 +2,7 @@ package country
 
 import (
 	"context"
+	"hungry-baby/businesses"
 	"hungry-baby/businesses/country"
 	"hungry-baby/helpers/str"
 	"strings"
@@ -110,7 +111,7 @@ func (cr *PostgresRepository) Store(ctx context.Context, countryDomain *country.
 
 	err := cr.conn.First(&rec, rec.ID).Error
 	if err != nil {
-		return country.Domain{}, result.Error
+		return country.Domain{}, err
 	}
 
 	return rec.ToDomain(), nil
@@ -119,14 +120,17 @@ func (cr *PostgresRepository) Store(ctx context.Context, countryDomain *country.
 func (cr *PostgresRepository) Update(ctx context.Context, countryDomain *country.Domain) (country.Domain, error) {
 	rec := FromDomain(countryDomain)
 
-	result := cr.conn.Save(&rec)
+	result := cr.conn.Updates(&rec)
 	if result.Error != nil {
 		return country.Domain{}, result.Error
+	}
+	if result.RowsAffected == 0 {
+		return country.Domain{}, businesses.ErrIDNotFound
 	}
 
 	err := cr.conn.First(&rec, rec.ID).Error
 	if err != nil {
-		return country.Domain{}, result.Error
+		return country.Domain{}, err
 	}
 
 	return rec.ToDomain(), nil

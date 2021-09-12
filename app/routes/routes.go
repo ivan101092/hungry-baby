@@ -11,22 +11,24 @@ import (
 	"hungry-baby/controllers/province"
 	"hungry-baby/controllers/user"
 	"hungry-baby/controllers/userChild"
+	"hungry-baby/controllers/userChildMeal"
 
 	echo "github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
 
 type ControllerList struct {
-	JWTMiddleware       middleware.JWTConfig
-	FileController      file.FileController
-	CountryController   country.CountryController
-	ProvinceController  province.ProvinceController
-	CityController      city.CityController
-	UserController      user.UserController
-	AuthController      auth.AuthController
-	CalendarController  calendar.CalendarController
-	MealPlanController  mealPlan.MealPlanController
-	UserChildController userChild.UserChildController
+	JWTMiddleware           middleware.JWTConfig
+	FileController          file.FileController
+	CountryController       country.CountryController
+	ProvinceController      province.ProvinceController
+	CityController          city.CityController
+	UserController          user.UserController
+	AuthController          auth.AuthController
+	CalendarController      calendar.CalendarController
+	MealPlanController      mealPlan.MealPlanController
+	UserChildController     userChild.UserChildController
+	UserChildMealController userChildMeal.UserChildMealController
 }
 
 func (c *ControllerList) RouteRegister(e *echo.Echo) {
@@ -106,4 +108,14 @@ func (c *ControllerList) RouteRegister(e *echo.Echo) {
 	userChild.POST("", c.UserChildController.Store)
 	userChild.PUT("/:id", c.UserChildController.Update)
 	userChild.DELETE("/:id", c.UserChildController.Delete)
+
+	userChildMeal := v1.Group("/userChildMeal")
+	userChildMeal.Use(middleware.JWTWithConfig(c.JWTMiddleware))
+	userChildMeal.Use(m.LoadClaims(c.JWTMiddleware))
+	userChildMeal.GET("/all", c.UserChildMealController.FindAll)
+	userChildMeal.GET("", c.UserChildMealController.Find)
+	userChildMeal.GET("/:id", c.UserChildMealController.FindByID)
+	userChildMeal.POST("", c.UserChildMealController.Store)
+	userChildMeal.PUT("/:id", c.UserChildMealController.Update)
+	userChildMeal.DELETE("/:id", c.UserChildMealController.Delete)
 }

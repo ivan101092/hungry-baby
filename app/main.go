@@ -33,6 +33,9 @@ import (
 	_userChildUsecase "hungry-baby/businesses/userChild"
 	_userChildController "hungry-baby/controllers/userChild"
 
+	_userChildMealUsecase "hungry-baby/businesses/userChildMeal"
+	_userChildMealController "hungry-baby/controllers/userChildMeal"
+
 	_minio "hungry-baby/drivers/minio"
 	_dbDriver "hungry-baby/drivers/postgres"
 	_calendar "hungry-baby/drivers/thirdparties/calendar"
@@ -129,17 +132,22 @@ func main() {
 	userChildUsecase := _userChildUsecase.NewUserChildUsecase(timeoutContext, userChildRepo)
 	userChildCtrl := _userChildController.NewUserChildController(userChildUsecase)
 
+	userChildMealRepo := _dbFactory.NewUserChildMealRepository(db)
+	userChildMealUsecase := _userChildMealUsecase.NewUserChildMealUsecase(timeoutContext, userChildMealRepo, userChildUsecase, mealPlanUsecase)
+	userChildMealCtrl := _userChildMealController.NewUserChildMealController(userChildMealUsecase)
+
 	routesInit := _routes.ControllerList{
-		JWTMiddleware:       configJWT.Init(),
-		FileController:      *fileCtrl,
-		CountryController:   *countryCtrl,
-		ProvinceController:  *provinceCtrl,
-		CityController:      *cityCtrl,
-		UserController:      *userCtrl,
-		AuthController:      *authCtrl,
-		CalendarController:  *calendarCtrl,
-		MealPlanController:  *mealPlanCtrl,
-		UserChildController: *userChildCtrl,
+		JWTMiddleware:           configJWT.Init(),
+		FileController:          *fileCtrl,
+		CountryController:       *countryCtrl,
+		ProvinceController:      *provinceCtrl,
+		CityController:          *cityCtrl,
+		UserController:          *userCtrl,
+		AuthController:          *authCtrl,
+		CalendarController:      *calendarCtrl,
+		MealPlanController:      *mealPlanCtrl,
+		UserChildController:     *userChildCtrl,
+		UserChildMealController: *userChildMealCtrl,
 	}
 	routesInit.RouteRegister(e)
 

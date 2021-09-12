@@ -25,10 +25,11 @@ func FromDomain(domain *fileUsecase.Domain) *File {
 
 func (rec *File) ToDomain() file.Domain {
 	return file.Domain{
-		ID:        rec.ID,
-		Type:      rec.Type,
-		URL:       rec.URL,
-		CreatedAt: rec.CreatedAt,
-		UpdatedAt: rec.UpdatedAt,
+		ID:         rec.ID,
+		Type:       rec.Type,
+		URL:        rec.URL,
+		UserUpload: rec.UserUpload,
+		CreatedAt:  rec.CreatedAt,
+		UpdatedAt:  rec.UpdatedAt,
 	}
 }

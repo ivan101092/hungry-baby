@@ -1,8 +1,8 @@
 package main
 
 import (
-	"fmt"
 	_dbFactory "hungry-baby/drivers/databases"
+	"hungry-baby/helpers/interfacepkg"
 
 	_fileUsecase "hungry-baby/businesses/file"
 	_fileController "hungry-baby/controllers/file"
@@ -16,8 +16,17 @@ import (
 	_cityUsecase "hungry-baby/businesses/city"
 	_cityController "hungry-baby/controllers/city"
 
+	_userUsecase "hungry-baby/businesses/user"
+	_userController "hungry-baby/controllers/user"
+
+	_userCredentialUsecase "hungry-baby/businesses/userCredential"
+
+	_authUsecase "hungry-baby/businesses/auth"
+	_authController "hungry-baby/controllers/auth"
+
 	_minio "hungry-baby/drivers/minio"
 	_dbDriver "hungry-baby/drivers/postgres"
+	_google "hungry-baby/drivers/thirdparties/google"
 
 	_config "hungry-baby/app/config"
 	_middleware "hungry-baby/app/middleware"
@@ -70,6 +79,8 @@ func main() {
 
 	e := echo.New()
 
+	googleRepo := _google.NewGoogle(interfacepkg.Marshal(configApp.Google.Key), configApp.Google.RedirectURL)
+
 	fileRepo := _dbFactory.NewFileRepository(db)
 	fileUsecase := _fileUsecase.NewFileUsecase(timeoutContext, fileRepo, connMinio)
 	fileCtrl := _fileController.NewFileController(fileUsecase)
@@ -86,16 +97,26 @@ func main() {
 	cityUsecase := _cityUsecase.NewCityUsecase(timeoutContext, cityRepo)
 	cityCtrl := _cityController.NewCityController(cityUsecase)
 
+	userRepo := _dbFactory.NewUserRepository(db)
+	userUsecase := _userUsecase.NewUserUsecase(timeoutContext, userRepo, connMinio)
+	userCtrl := _userController.NewUserController(userUsecase)
+
+	userCredentialRepo := _dbFactory.NewUserCredentialRepository(db)
+	userCredentialUsecase := _userCredentialUsecase.NewUserCredentialUsecase(timeoutContext, userCredentialRepo)
+
+	authUsecase := _authUsecase.NewAuthUsecase(timeoutContext, googleRepo, userUsecase, userCredentialUsecase, configJWT)
+	authCtrl := _authController.NewAuthController(authUsecase)
+
 	routesInit := _routes.ControllerList{
 		JWTMiddleware:      configJWT.Init(),
 		FileController:     *fileCtrl,
 		CountryController:  *countryCtrl,
 		ProvinceController: *provinceCtrl,
 		CityController:     *cityCtrl,
+		UserController:     *userCtrl,
+		AuthController:     *authCtrl,
 	}
 	routesInit.RouteRegister(e)
-
-	fmt.Println(configJWT.GenerateToken(1))
 
 	log.Fatal(e.Start(viper.GetString("server.address")))
 }

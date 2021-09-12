@@ -29,6 +29,9 @@ func (cr *PostgresRepository) FindAll(ctx context.Context, search string, countr
 		query = query.Where("LOWER(code) LIKE ? AND LOWER(name) LIKE ?",
 			`%`+strings.ToLower(search)+`%`, `%`+strings.ToLower(search)+`%`)
 	}
+	if countryID != 0 {
+		query = query.Where("country_id = ?", countryID)
+	}
 	if str.CheckBool(status) {
 		query = query.Where("status = ?", status)
 	}
@@ -53,6 +56,9 @@ func (cr *PostgresRepository) Find(ctx context.Context, search string, countryID
 	if search != "" {
 		query = query.Where("LOWER(code) LIKE ? AND LOWER(name) LIKE ?",
 			`%`+strings.ToLower(search)+`%`, `%`+strings.ToLower(search)+`%`)
+	}
+	if countryID != 0 {
+		query = query.Where("country_id = ?", countryID)
 	}
 	if str.CheckBool(status) {
 		query = query.Where("status = ?", status)

@@ -78,7 +78,7 @@ func LoadClaims(config middleware.JWTConfig) echo.MiddlewareFunc {
 			claims := user.Claims.(*JwtCustomClaims)
 
 			ctx := context.Background()
-			ctx = context.WithValue(ctx, "userID", cast.ToInt(claims.Id))
+			ctx = context.WithValue(ctx, "userID", cast.ToInt(claims.ID))
 			c.Set("ctx", ctx)
 
 			return next(c)

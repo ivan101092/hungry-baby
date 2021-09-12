@@ -21,13 +21,16 @@ func NewPostgresRepository(conn *gorm.DB) *PostgresRepository {
 	}
 }
 
-func (cr *PostgresRepository) FindAll(ctx context.Context, search string, countryID int, status string) ([]city.Domain, error) {
+func (cr *PostgresRepository) FindAll(ctx context.Context, search string, provinceID int, status string) ([]city.Domain, error) {
 	rec := []City{}
 
 	query := cr.conn.Debug()
 	if search != "" {
 		query = query.Where("LOWER(code) LIKE ? AND LOWER(name) LIKE ?",
 			`%`+strings.ToLower(search)+`%`, `%`+strings.ToLower(search)+`%`)
+	}
+	if provinceID != 0 {
+		query = query.Where("province_id = ?", provinceID)
 	}
 	if str.CheckBool(status) {
 		query = query.Where("status = ?", status)
@@ -45,7 +48,7 @@ func (cr *PostgresRepository) FindAll(ctx context.Context, search string, countr
 	return cityDomain, nil
 }
 
-func (cr *PostgresRepository) Find(ctx context.Context, search string, countryID int, status string, page, perpage int) ([]city.Domain, int, error) {
+func (cr *PostgresRepository) Find(ctx context.Context, search string, provinceID int, status string, page, perpage int) ([]city.Domain, int, error) {
 	rec := []City{}
 
 	offset := (page - 1) * perpage
@@ -53,6 +56,9 @@ func (cr *PostgresRepository) Find(ctx context.Context, search string, countryID
 	if search != "" {
 		query = query.Where("LOWER(code) LIKE ? AND LOWER(name) LIKE ?",
 			`%`+strings.ToLower(search)+`%`, `%`+strings.ToLower(search)+`%`)
+	}
+	if provinceID != 0 {
+		query = query.Where("province_id = ?", provinceID)
 	}
 	if str.CheckBool(status) {
 		query = query.Where("status = ?", status)

@@ -36,6 +36,12 @@ func (uc *fileUsecase) FindByID(ctx context.Context, fileId int) (Domain, error)
 		return Domain{}, err
 	}
 
+	// Get temporary url
+	res.FullURL, err = uc.minioRepository.GetFile(res.URL)
+	if err != nil {
+		return Domain{}, err
+	}
+
 	return res, nil
 }
 
@@ -43,6 +49,7 @@ func (uc *fileUsecase) Store(ctx context.Context, fileDomain *Domain) (Domain, e
 	ctx, cancel := context.WithTimeout(ctx, uc.contextTimeout)
 	defer cancel()
 
+	fileDomain.UserUpload = strconv.Itoa(ctx.Value("userID").(int))
 	result, err := uc.fileRepository.Store(ctx, fileDomain)
 	if err != nil {
 		return Domain{}, err

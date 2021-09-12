@@ -13,6 +13,12 @@ import (
 	cityDomain "hungry-baby/businesses/city"
 	cityDB "hungry-baby/drivers/databases/city"
 
+	userDomain "hungry-baby/businesses/user"
+	userDB "hungry-baby/drivers/databases/user"
+
+	userCredentialDomain "hungry-baby/businesses/userCredential"
+	userCredentialDB "hungry-baby/drivers/databases/userCredential"
+
 	"gorm.io/gorm"
 )
 
@@ -34,4 +40,14 @@ func NewProvinceRepository(conn *gorm.DB) provinceDomain.Repository {
 //NewCityRepository Factory with city domain
 func NewCityRepository(conn *gorm.DB) cityDomain.Repository {
 	return cityDB.NewPostgresRepository(conn)
+}
+
+//NewUserRepository Factory with user domain
+func NewUserRepository(conn *gorm.DB) userDomain.Repository {
+	return userDB.NewPostgresRepository(conn)
+}
+
+//NewUserCredentialRepository Factory with user domain
+func NewUserCredentialRepository(conn *gorm.DB) userCredentialDomain.Repository {
+	return userCredentialDB.NewPostgresRepository(conn)
 }

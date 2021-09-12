@@ -2,10 +2,12 @@ package routes
 
 import (
 	m "hungry-baby/app/middleware"
+	"hungry-baby/controllers/auth"
 	"hungry-baby/controllers/city"
 	"hungry-baby/controllers/country"
 	"hungry-baby/controllers/file"
 	"hungry-baby/controllers/province"
+	"hungry-baby/controllers/user"
 
 	echo "github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -17,6 +19,8 @@ type ControllerList struct {
 	CountryController  country.CountryController
 	ProvinceController province.ProvinceController
 	CityController     city.CityController
+	UserController     user.UserController
+	AuthController     auth.AuthController
 }
 
 func (c *ControllerList) RouteRegister(e *echo.Echo) {
@@ -58,4 +62,18 @@ func (c *ControllerList) RouteRegister(e *echo.Echo) {
 	city.POST("", c.CityController.Store)
 	city.PUT("/:id", c.CityController.Update)
 	city.DELETE("/:id", c.CityController.Delete)
+
+	user := v1.Group("/user")
+	user.Use(middleware.JWTWithConfig(c.JWTMiddleware))
+	user.Use(m.LoadClaims(c.JWTMiddleware))
+	user.GET("/all", c.UserController.FindAll)
+	user.GET("", c.UserController.Find)
+	user.GET("/:id", c.UserController.FindByID)
+	user.POST("", c.UserController.Store)
+	user.PUT("/:id", c.UserController.Update)
+	user.DELETE("/:id", c.UserController.Delete)
+
+	auth := v1.Group("/auth")
+	auth.GET("/loginUrl", c.AuthController.GetGoogleLoginURL)
+	auth.GET("/google", c.AuthController.VerifyGoogleCode)
 }

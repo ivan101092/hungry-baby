@@ -32,6 +32,10 @@ type Config struct {
 		Duration      int
 		DefaultBucket string
 	}
+	Google struct {
+		Key         interface{}
+		RedirectURL string
+	}
 }
 
 func GetConfig() Config {

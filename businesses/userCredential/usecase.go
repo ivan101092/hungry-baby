@@ -65,18 +65,6 @@ func (uc *userCredentialUsecase) FindByID(ctx context.Context, id int, status st
 	return res, nil
 }
 
-func (uc *userCredentialUsecase) FindByCode(ctx context.Context, code, status string) (Domain, error) {
-	ctx, cancel := context.WithTimeout(ctx, uc.contextTimeout)
-	defer cancel()
-
-	res, err := uc.userCredentialRepository.FindByCode(ctx, code, status)
-	if err != nil {
-		return Domain{}, err
-	}
-
-	return res, nil
-}
-
 func (uc *userCredentialUsecase) FindByEmail(ctx context.Context, email, status string) (Domain, error) {
 	ctx, cancel := context.WithTimeout(ctx, uc.contextTimeout)
 	defer cancel()
@@ -89,11 +77,24 @@ func (uc *userCredentialUsecase) FindByEmail(ctx context.Context, email, status 
 	return res, nil
 }
 
+func (uc *userCredentialUsecase) FindByUserType(ctx context.Context, userID int, types, status string) (Domain, error) {
+	ctx, cancel := context.WithTimeout(ctx, uc.contextTimeout)
+	defer cancel()
+
+	res, err := uc.userCredentialRepository.FindByUserType(ctx, userID, types, status)
+	if err != nil {
+		return Domain{}, err
+	}
+
+	return res, nil
+}
+
 func (uc *userCredentialUsecase) Store(ctx context.Context, userCredentialDomain *Domain) (Domain, error) {
 	ctx, cancel := context.WithTimeout(ctx, uc.contextTimeout)
 	defer cancel()
 
-	exist, err := uc.userCredentialRepository.FindByEmail(ctx, userCredentialDomain.Email, "")
+	exist, err := uc.userCredentialRepository.FindByUserType(ctx, userCredentialDomain.UserID,
+		userCredentialDomain.Type, "")
 	if err != nil {
 		if !strings.Contains(err.Error(), "not found") {
 			return Domain{}, err
@@ -115,7 +116,8 @@ func (uc *userCredentialUsecase) Update(ctx context.Context, userCredentialDomai
 	ctx, cancel := context.WithTimeout(ctx, uc.contextTimeout)
 	defer cancel()
 
-	exist, err := uc.userCredentialRepository.FindByEmail(ctx, userCredentialDomain.Email, "")
+	exist, err := uc.userCredentialRepository.FindByUserType(ctx, userCredentialDomain.UserID,
+		userCredentialDomain.Type, "")
 	if err != nil {
 		if !strings.Contains(err.Error(), "not found") {
 			return Domain{}, err

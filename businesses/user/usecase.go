@@ -109,7 +109,7 @@ func (uc *userUsecase) Store(ctx context.Context, userDomain *Domain) (Domain, e
 			return Domain{}, err
 		}
 	}
-	if exist != (Domain{}) {
+	if exist.ID != 0 {
 		return Domain{}, businesses.ErrDuplicateData
 	}
 
@@ -125,15 +125,12 @@ func (uc *userUsecase) Update(ctx context.Context, userDomain *Domain) (Domain, 
 	ctx, cancel := context.WithTimeout(ctx, uc.contextTimeout)
 	defer cancel()
 
-	exist, err := uc.userRepository.FindByEmail(ctx, userDomain.Email, "")
+	exist, err := uc.userRepository.FindByID(ctx, userDomain.ID, "")
 	if err != nil {
-		if !strings.Contains(err.Error(), "not found") {
-			return Domain{}, err
-		}
+		return Domain{}, err
 	}
-	if exist != (Domain{}) && exist.ID != userDomain.ID {
-		return Domain{}, businesses.ErrDuplicateData
-	}
+	userDomain.Code = exist.Code
+	userDomain.Email = exist.Email
 
 	result, err := uc.userRepository.Update(ctx, userDomain)
 	if err != nil {

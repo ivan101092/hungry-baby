@@ -91,19 +91,6 @@ func (cr *PostgresRepository) FindByID(ctx context.Context, id int, status strin
 	return rec.ToDomain(), nil
 }
 
-func (cr *PostgresRepository) FindByCode(ctx context.Context, code, status string) (userCredential.Domain, error) {
-	rec := UserCredential{}
-
-	query := cr.conn.Debug().Table("user_credentials")
-	if str.CheckBool(status) {
-		query = query.Where("status = ?", status)
-	}
-	if err := query.Where("code = ?", code).First(&rec).Error; err != nil {
-		return userCredential.Domain{}, err
-	}
-	return rec.ToDomain(), nil
-}
-
 func (cr *PostgresRepository) FindByEmail(ctx context.Context, email, status string) (userCredential.Domain, error) {
 	rec := UserCredential{}
 
@@ -112,6 +99,25 @@ func (cr *PostgresRepository) FindByEmail(ctx context.Context, email, status str
 		query = query.Where("status = ?", status)
 	}
 	if err := query.Where("LOWER(email) = ?", strings.ToLower(email)).First(&rec).Error; err != nil {
+		return userCredential.Domain{}, err
+	}
+	return rec.ToDomain(), nil
+}
+
+func (cr *PostgresRepository) FindByUserType(ctx context.Context, userID int, types, status string) (userCredential.Domain, error) {
+	rec := UserCredential{}
+
+	query := cr.conn.Debug().Table("user_credentials")
+	if str.CheckBool(status) {
+		query = query.Where("status = ?", status)
+	}
+	if userID != 0 {
+		query = query.Where("user_id = ?", userID)
+	}
+	if types != "" {
+		query = query.Where("type = ?", types)
+	}
+	if err := query.First(&rec).Error; err != nil {
 		return userCredential.Domain{}, err
 	}
 	return rec.ToDomain(), nil

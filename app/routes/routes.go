@@ -3,24 +3,30 @@ package routes
 import (
 	m "hungry-baby/app/middleware"
 	"hungry-baby/controllers/auth"
+	"hungry-baby/controllers/calendar"
 	"hungry-baby/controllers/city"
 	"hungry-baby/controllers/country"
 	"hungry-baby/controllers/file"
+	"hungry-baby/controllers/mealPlan"
 	"hungry-baby/controllers/province"
 	"hungry-baby/controllers/user"
+	"hungry-baby/controllers/userChild"
 
 	echo "github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
 
 type ControllerList struct {
-	JWTMiddleware      middleware.JWTConfig
-	FileController     file.FileController
-	CountryController  country.CountryController
-	ProvinceController province.ProvinceController
-	CityController     city.CityController
-	UserController     user.UserController
-	AuthController     auth.AuthController
+	JWTMiddleware       middleware.JWTConfig
+	FileController      file.FileController
+	CountryController   country.CountryController
+	ProvinceController  province.ProvinceController
+	CityController      city.CityController
+	UserController      user.UserController
+	AuthController      auth.AuthController
+	CalendarController  calendar.CalendarController
+	MealPlanController  mealPlan.MealPlanController
+	UserChildController userChild.UserChildController
 }
 
 func (c *ControllerList) RouteRegister(e *echo.Echo) {
@@ -66,14 +72,38 @@ func (c *ControllerList) RouteRegister(e *echo.Echo) {
 	user := v1.Group("/user")
 	user.Use(middleware.JWTWithConfig(c.JWTMiddleware))
 	user.Use(m.LoadClaims(c.JWTMiddleware))
-	user.GET("/all", c.UserController.FindAll)
-	user.GET("", c.UserController.Find)
-	user.GET("/:id", c.UserController.FindByID)
-	user.POST("", c.UserController.Store)
-	user.PUT("/:id", c.UserController.Update)
-	user.DELETE("/:id", c.UserController.Delete)
+	user.GET("", c.UserController.FindByToken)
+	user.PUT("", c.UserController.UpdateByToken)
 
 	auth := v1.Group("/auth")
 	auth.GET("/loginUrl", c.AuthController.GetGoogleLoginURL)
 	auth.GET("/google", c.AuthController.VerifyGoogleCode)
+
+	calendar := v1.Group("/calendar")
+	calendar.Use(middleware.JWTWithConfig(c.JWTMiddleware))
+	calendar.Use(m.LoadClaims(c.JWTMiddleware))
+	calendar.GET("", c.CalendarController.FindAll)
+	calendar.GET("/:id", c.CalendarController.FindByID)
+	calendar.POST("", c.CalendarController.Store)
+	calendar.DELETE("/:id", c.CalendarController.Delete)
+
+	mealPlan := v1.Group("/mealPlan")
+	mealPlan.Use(middleware.JWTWithConfig(c.JWTMiddleware))
+	mealPlan.Use(m.LoadClaims(c.JWTMiddleware))
+	mealPlan.GET("/all", c.MealPlanController.FindAll)
+	mealPlan.GET("", c.MealPlanController.Find)
+	mealPlan.GET("/:id", c.MealPlanController.FindByID)
+	mealPlan.POST("", c.MealPlanController.Store)
+	mealPlan.PUT("/:id", c.MealPlanController.Update)
+	mealPlan.DELETE("/:id", c.MealPlanController.Delete)
+
+	userChild := v1.Group("/userChild")
+	userChild.Use(middleware.JWTWithConfig(c.JWTMiddleware))
+	userChild.Use(m.LoadClaims(c.JWTMiddleware))
+	userChild.GET("/all", c.UserChildController.FindAll)
+	userChild.GET("", c.UserChildController.Find)
+	userChild.GET("/:id", c.UserChildController.FindByID)
+	userChild.POST("", c.UserChildController.Store)
+	userChild.PUT("/:id", c.UserChildController.Update)
+	userChild.DELETE("/:id", c.UserChildController.Delete)
 }

@@ -19,6 +19,12 @@ import (
 	userCredentialDomain "hungry-baby/businesses/userCredential"
 	userCredentialDB "hungry-baby/drivers/databases/userCredential"
 
+	mealPlanDomain "hungry-baby/businesses/mealPlan"
+	mealPlanDB "hungry-baby/drivers/databases/mealPlan"
+
+	userChildDomain "hungry-baby/businesses/userChild"
+	userChildDB "hungry-baby/drivers/databases/userChild"
+
 	"gorm.io/gorm"
 )
 
@@ -50,4 +56,14 @@ func NewUserRepository(conn *gorm.DB) userDomain.Repository {
 //NewUserCredentialRepository Factory with user domain
 func NewUserCredentialRepository(conn *gorm.DB) userCredentialDomain.Repository {
 	return userCredentialDB.NewPostgresRepository(conn)
+}
+
+//NewMealPlanRepository Factory with user domain
+func NewMealPlanRepository(conn *gorm.DB) mealPlanDomain.Repository {
+	return mealPlanDB.NewPostgresRepository(conn)
+}
+
+//NewUserChildRepository Factory with user domain
+func NewUserChildRepository(conn *gorm.DB) userChildDomain.Repository {
+	return userChildDB.NewPostgresRepository(conn)
 }

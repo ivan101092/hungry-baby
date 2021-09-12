@@ -24,8 +24,18 @@ import (
 	_authUsecase "hungry-baby/businesses/auth"
 	_authController "hungry-baby/controllers/auth"
 
+	_calendarUsecase "hungry-baby/businesses/calendar"
+	_calendarController "hungry-baby/controllers/calendar"
+
+	_mealPlanUsecase "hungry-baby/businesses/mealPlan"
+	_mealPlanController "hungry-baby/controllers/mealPlan"
+
+	_userChildUsecase "hungry-baby/businesses/userChild"
+	_userChildController "hungry-baby/controllers/userChild"
+
 	_minio "hungry-baby/drivers/minio"
 	_dbDriver "hungry-baby/drivers/postgres"
+	_calendar "hungry-baby/drivers/thirdparties/calendar"
 	_google "hungry-baby/drivers/thirdparties/google"
 
 	_config "hungry-baby/app/config"
@@ -107,14 +117,29 @@ func main() {
 	authUsecase := _authUsecase.NewAuthUsecase(timeoutContext, googleRepo, userUsecase, userCredentialUsecase, configJWT)
 	authCtrl := _authController.NewAuthController(authUsecase)
 
+	calendarRepo := _calendar.NewCalendar(interfacepkg.Marshal(configApp.Google.Key), configApp.Google.RedirectURL)
+	calendarUsecase := _calendarUsecase.NewCalendarUsecase(timeoutContext, calendarRepo, userCredentialUsecase)
+	calendarCtrl := _calendarController.NewCalendarController(calendarUsecase)
+
+	mealPlanRepo := _dbFactory.NewMealPlanRepository(db)
+	mealPlanUsecase := _mealPlanUsecase.NewMealPlanUsecase(timeoutContext, mealPlanRepo)
+	mealPlanCtrl := _mealPlanController.NewMealPlanController(mealPlanUsecase)
+
+	userChildRepo := _dbFactory.NewUserChildRepository(db)
+	userChildUsecase := _userChildUsecase.NewUserChildUsecase(timeoutContext, userChildRepo)
+	userChildCtrl := _userChildController.NewUserChildController(userChildUsecase)
+
 	routesInit := _routes.ControllerList{
-		JWTMiddleware:      configJWT.Init(),
-		FileController:     *fileCtrl,
-		CountryController:  *countryCtrl,
-		ProvinceController: *provinceCtrl,
-		CityController:     *cityCtrl,
-		UserController:     *userCtrl,
-		AuthController:     *authCtrl,
+		JWTMiddleware:       configJWT.Init(),
+		FileController:      *fileCtrl,
+		CountryController:   *countryCtrl,
+		ProvinceController:  *provinceCtrl,
+		CityController:      *cityCtrl,
+		UserController:      *userCtrl,
+		AuthController:      *authCtrl,
+		CalendarController:  *calendarCtrl,
+		MealPlanController:  *mealPlanCtrl,
+		UserChildController: *userChildCtrl,
 	}
 	routesInit.RouteRegister(e)
 

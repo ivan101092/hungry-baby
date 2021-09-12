@@ -107,7 +107,7 @@ func (uc *authUsecase) VerifyGoogleCode(ctx context.Context, code string) (Domai
 			return Domain{}, err
 		}
 	} else {
-		userCredential, err := uc.userCredentialUsecase.FindByEmail(ctx, user.Email, "")
+		userCredential, err := uc.userCredentialUsecase.FindByUserType(ctx, user.ID, "gmail", "")
 		if err != nil {
 			now := time.Now().UTC()
 			_, err = uc.userCredentialUsecase.Store(ctx, &userCredentialBusiness.Domain{

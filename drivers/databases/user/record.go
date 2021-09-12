@@ -20,6 +20,7 @@ type User struct {
 	CityName        string `json:"city_name" gorm:"<-:false"`
 	Address         string
 	Settings        string
+	Credentials     string `json:"credentials" gorm:"<-:false"`
 	Status          bool
 	postgres.BaseModel
 }
@@ -38,6 +39,7 @@ func FromDomain(domain *userUsecase.Domain) *User {
 		CityName:        domain.CityName,
 		Address:         domain.Address,
 		Settings:        interfacepkg.Marshal(domain.Settings),
+		Credentials:     interfacepkg.Marshal(domain.Credentials),
 		Status:          domain.Status,
 	}
 }
@@ -45,6 +47,9 @@ func FromDomain(domain *userUsecase.Domain) *User {
 func (rec *User) ToDomain() user.Domain {
 	var settings user.DomainSettings
 	interfacepkg.UnmarshalCb(rec.Settings, &settings)
+
+	var credentials []user.DomainCredentials
+	interfacepkg.UnmarshalCb(rec.Credentials, &credentials)
 
 	return user.Domain{
 		ID:              rec.ID,
@@ -59,6 +64,7 @@ func (rec *User) ToDomain() user.Domain {
 		CityName:        rec.CityName,
 		Address:         rec.Address,
 		Settings:        settings,
+		Credentials:     credentials,
 		Status:          rec.Status,
 	}
 }

@@ -19,11 +19,11 @@ func NewCityUsecase(timeout time.Duration, repo Repository) Usecase {
 	}
 }
 
-func (uc *cityUsecase) FindAll(ctx context.Context, search string, cityID int, status string) ([]Domain, error) {
+func (uc *cityUsecase) FindAll(ctx context.Context, search string, provinceID int, status string) ([]Domain, error) {
 	ctx, cancel := context.WithTimeout(ctx, uc.contextTimeout)
 	defer cancel()
 
-	res, err := uc.cityRepository.FindAll(ctx, search, cityID, status)
+	res, err := uc.cityRepository.FindAll(ctx, search, provinceID, status)
 	if err != nil {
 		return []Domain{}, err
 	}
@@ -31,7 +31,7 @@ func (uc *cityUsecase) FindAll(ctx context.Context, search string, cityID int, s
 	return res, nil
 }
 
-func (uc *cityUsecase) Find(ctx context.Context, search string, cityID int, status string, page, perpage int) ([]Domain, int, error) {
+func (uc *cityUsecase) Find(ctx context.Context, search string, provinceID int, status string, page, perpage int) ([]Domain, int, error) {
 	ctx, cancel := context.WithTimeout(ctx, uc.contextTimeout)
 	defer cancel()
 
@@ -42,7 +42,7 @@ func (uc *cityUsecase) Find(ctx context.Context, search string, cityID int, stat
 		perpage = 25
 	}
 
-	res, total, err := uc.cityRepository.Find(ctx, search, cityID, status, page, perpage)
+	res, total, err := uc.cityRepository.Find(ctx, search, provinceID, status, page, perpage)
 	if err != nil {
 		return []Domain{}, 0, err
 	}

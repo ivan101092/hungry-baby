@@ -79,9 +79,17 @@ func (cr *PostgresRepository) FindByID(ctx context.Context, id int, status strin
 	rec := User{}
 
 	query := cr.conn.Debug().Table("users")
-	query = query.Select("users.*, c.name as city_name, f.url as profile_image_url")
+	query = query.Select(`users.*, c.name as city_name, f.url as profile_image_url,
+	jsonb_agg(distinct jsonb_build_object(
+		'id',uc.id, 
+		'type',uc.type,
+		'email',uc.email,
+		'registration_details',uc.registration_details
+	)) filter (where uc.id is not null) credentials`)
 	query = query.Joins("LEFT JOIN cities c ON c.id = users.city_id")
 	query = query.Joins("LEFT JOIN files f ON f.id = users.profile_image_id")
+	query = query.Joins("LEFT JOIN user_credentials uc ON uc.user_id = users.id")
+	query = query.Group("users.id, c.name, f.url")
 	if str.CheckBool(status) {
 		query = query.Where("users.status = ?", status)
 	}

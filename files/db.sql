@@ -105,12 +105,12 @@ CREATE TABLE IF NOT EXISTS meal_plans (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL REFERENCES users(id) DEFAULT 0,
     name TEXT NOT NULL CHECK (char_length(name) <= 100),
-    min_age NUMERIC(20,3) NOT NULL DEFAULT 0,
-	max_age NUMERIC(20,3) NOT NULL DEFAULT 0,
+    min_age NUMERIC(20,3) NOT NULL DEFAULT 0, -- in months
+	max_age NUMERIC(20,3) NOT NULL DEFAULT 0, -- in months
 	interval NUMERIC(20,3) NOT NULL DEFAULT 0, -- in minutes
 	suggestion_quantity NUMERIC(20,3) NOT NULL DEFAULT 0,
     unit TEXT NOT NULL CHECK (char_length(unit) <= 20) DEFAULT '',
-	status TEXT NOT NULL CHECK (char_length(status) <= 20) DEFAULT '',
+	status BOOLEAN NOT NULL DEFAULT 'false',
 	created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP WITH TIME ZONE
@@ -124,7 +124,7 @@ CREATE TABLE IF NOT EXISTS user_childs (
     user_id INTEGER NOT NULL REFERENCES users(id),
     name TEXT NOT NULL CHECK (char_length(name) <= 100),
     gender TEXT NOT NULL CHECK (char_length(gender) <= 20),
-    birth_date TIMESTAMP WITH TIME ZONE,
+    birth_date DATE NOT NULL,
     birth_length NUMERIC(20,3) NOT NULL DEFAULT 0,
     birth_weight NUMERIC(20,3) NOT NULL DEFAULT 0,
     head_circumference NUMERIC(20,3) NOT NULL DEFAULT 0,
@@ -134,7 +134,7 @@ CREATE TABLE IF NOT EXISTS user_childs (
 );
 CREATE TRIGGER user_childs BEFORE UPDATE ON user_childs FOR EACH ROW EXECUTE PROCEDURE update_modified_column();
 INSERT INTO user_childs ("id", "user_id", "name", "gender", "birth_date", "deleted_at")
-VALUES (0, 0, '', '', now(), now());
+VALUES (0, 0, '', '', '1970-01-01', now());
 
 CREATE TABLE IF NOT EXISTS user_child_meals (
     id SERIAL PRIMARY KEY,
@@ -152,8 +152,8 @@ CREATE TABLE IF NOT EXISTS user_child_meals (
     deleted_at TIMESTAMP WITH TIME ZONE
 );
 CREATE TRIGGER user_child_meals BEFORE UPDATE ON user_child_meals FOR EACH ROW EXECUTE PROCEDURE update_modified_column();
-INSERT INTO user_child_meals ("id", "user_child_id", "name", "finish_at", "deleted_at")
-VALUES (0, 0, '', now(), now());
+INSERT INTO user_child_meals ("id", "user_child_id", "name", "scheduled_at", "finish_at", "deleted_at")
+VALUES (0, 0, '', now(), now(), now());
 
 CREATE TABLE IF NOT EXISTS workshops (
     id SERIAL PRIMARY KEY,

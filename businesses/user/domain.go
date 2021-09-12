@@ -18,6 +18,7 @@ type Domain struct {
 	CityName        string
 	Address         string
 	Settings        DomainSettings
+	Credentials     []DomainCredentials
 	Status          bool
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
@@ -25,6 +26,20 @@ type Domain struct {
 
 type DomainSettings struct {
 	AutoNotification bool `json:"auto_notification"`
+}
+
+type DomainCredentials struct {
+	ID                  int                       `json:"id"`
+	Type                string                    `json:"type"`
+	Email               string                    `json:"email"`
+	RegistrationDetails DomainRegistrationDetails `json:"registration_details"`
+}
+
+type DomainRegistrationDetails struct {
+	AccessToken  string `json:"access_token"`
+	Expiry       string `json:"expiry"`
+	RefreshToken string `json:"refresh_token"`
+	TokenType    string `json:"token_type"`
 }
 
 type Usecase interface {

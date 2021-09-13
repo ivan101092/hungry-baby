@@ -3,20 +3,19 @@ package file
 import (
 	"context"
 	"hungry-baby/businesses"
+	minioBusiness "hungry-baby/businesses/minio"
 	"mime/multipart"
 	"strconv"
 	"time"
-
-	"hungry-baby/drivers/minio"
 )
 
 type fileUsecase struct {
 	fileRepository  Repository
 	contextTimeout  time.Duration
-	minioRepository minio.IMinio
+	minioRepository minioBusiness.Repository
 }
 
-func NewFileUsecase(timeout time.Duration, repo Repository, minioRepo minio.IMinio) Usecase {
+func NewFileUsecase(timeout time.Duration, repo Repository, minioRepo minioBusiness.Repository) Usecase {
 	return &fileUsecase{
 		fileRepository:  repo,
 		contextTimeout:  timeout,

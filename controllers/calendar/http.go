@@ -5,6 +5,7 @@ import (
 	"hungry-baby/businesses/calendar"
 	controller "hungry-baby/controllers"
 	"hungry-baby/controllers/calendar/request"
+	"hungry-baby/controllers/calendar/response"
 	"net/http"
 	"strconv"
 
@@ -35,7 +36,12 @@ func (ctrl *CalendarController) FindAll(c echo.Context) error {
 		return controller.NewErrorResponse(c, http.StatusInternalServerError, err)
 	}
 
-	return controller.NewSuccessResponse(c, resp, 0)
+	responseController := []response.Calendar{}
+	for _, value := range resp {
+		responseController = append(responseController, response.FromDomain(value))
+	}
+
+	return controller.NewSuccessResponse(c, responseController, 0)
 }
 
 func (ctrl *CalendarController) FindByID(c echo.Context) error {
@@ -47,7 +53,7 @@ func (ctrl *CalendarController) FindByID(c echo.Context) error {
 		return controller.NewErrorResponse(c, http.StatusInternalServerError, err)
 	}
 
-	return controller.NewSuccessResponse(c, resp, 0)
+	return controller.NewSuccessResponse(c, response.FromDomain(resp), 0)
 }
 
 func (ctrl *CalendarController) Store(c echo.Context) error {
@@ -63,7 +69,7 @@ func (ctrl *CalendarController) Store(c echo.Context) error {
 		return controller.NewErrorResponse(c, http.StatusInternalServerError, err)
 	}
 
-	return controller.NewSuccessResponse(c, resp, 0)
+	return controller.NewSuccessResponse(c, response.FromDomain(resp), 0)
 }
 
 func (ctrl *CalendarController) Delete(c echo.Context) error {

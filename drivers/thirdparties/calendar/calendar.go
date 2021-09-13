@@ -25,7 +25,7 @@ func NewCalendar(key, redirectURL string) calendarBusiness.Repository {
 }
 
 // FindAll ...
-func (cred *Credential) FindAll(ctx context.Context, tokenString, search, startAt, endAt, pageToken string, limit int) (res *calendar.Events, err error) {
+func (cred *Credential) FindAll(ctx context.Context, tokenString, search, startAt, endAt, pageToken string, limit int) (res []calendarBusiness.Domain, err error) {
 	key := strings.Replace(cred.Key, "{redirect_url}", cred.RedirectURL, 1)
 	b := []byte(key)
 	config, err := googlepkg.ConfigFromJSON(b, google.CalendarScopes...)
@@ -47,16 +47,20 @@ func (cred *Credential) FindAll(ctx context.Context, tokenString, search, startA
 	} else if endAt != "" {
 		eventListCall = srv.Events.List("primary").Q(search).TimeMax(endAt).ShowDeleted(false).PageToken(pageToken).MaxResults(int64(limit))
 	}
-	res, err = eventListCall.Do()
+	data, err := eventListCall.Do()
 	if err != nil {
 		return res, err
+	}
+
+	for _, c := range data.Items {
+		res = append(res, ToDomain(c))
 	}
 
 	return res, err
 }
 
 // FindByID ...
-func (cred *Credential) FindByID(ctx context.Context, tokenString, id string) (res *calendar.Event, err error) {
+func (cred *Credential) FindByID(ctx context.Context, tokenString, id string) (res calendarBusiness.Domain, err error) {
 	key := strings.Replace(cred.Key, "{redirect_url}", cred.RedirectURL, 1)
 	b := []byte(key)
 	config, err := googlepkg.ConfigFromJSON(b, google.CalendarScopes...)
@@ -70,16 +74,17 @@ func (cred *Credential) FindByID(ctx context.Context, tokenString, id string) (r
 		return res, err
 	}
 
-	res, err = srv.Events.Get("primary", id).Do()
+	data, err := srv.Events.Get("primary", id).Do()
 	if err != nil {
 		return res, err
 	}
 
-	return res, err
+	return ToDomain(data), err
 }
 
 // Add ...
-func (cred *Credential) Add(ctx context.Context, tokenString string, body *calendar.Event) (res *calendar.Event, err error) {
+func (cred *Credential) Add(ctx context.Context, tokenString string, calendarDomain *calendarBusiness.Domain) (res calendarBusiness.Domain, err error) {
+	body := FromDomain(calendarDomain)
 	key := strings.Replace(cred.Key, "{redirect_url}", cred.RedirectURL, 1)
 	b := []byte(key)
 	config, err := googlepkg.ConfigFromJSON(b, google.CalendarScopes...)
@@ -97,12 +102,12 @@ func (cred *Credential) Add(ctx context.Context, tokenString string, body *calen
 	if body.ConferenceData != nil {
 		converenceDataVersion = 1
 	}
-	res, err = srv.Events.Insert("primary", body).ConferenceDataVersion(converenceDataVersion).Do()
+	data, err := srv.Events.Insert("primary", body).ConferenceDataVersion(converenceDataVersion).Do()
 	if err != nil {
 		return res, err
 	}
 
-	return res, err
+	return ToDomain(data), err
 }
 
 // Delete ...

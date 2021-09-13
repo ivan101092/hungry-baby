@@ -5,9 +5,6 @@ import (
 	userCredentialBusiness "hungry-baby/businesses/userCredential"
 	"hungry-baby/helpers/interfacepkg"
 	"time"
-
-	"github.com/rs/xid"
-	"google.golang.org/api/calendar/v3"
 )
 
 type calendarUsecase struct {
@@ -24,7 +21,7 @@ func NewCalendarUsecase(timeout time.Duration, repo Repository, userCredentialUs
 	}
 }
 
-func (uc *calendarUsecase) FindAll(ctx context.Context, search, startAt, endAt, pageToken string, limit int) (*calendar.Events, error) {
+func (uc *calendarUsecase) FindAll(ctx context.Context, search, startAt, endAt, pageToken string, limit int) ([]Domain, error) {
 	ctx, cancel := context.WithTimeout(ctx, uc.contextTimeout)
 	defer cancel()
 
@@ -41,64 +38,35 @@ func (uc *calendarUsecase) FindAll(ctx context.Context, search, startAt, endAt, 
 	return res, nil
 }
 
-func (uc *calendarUsecase) FindByID(ctx context.Context, id string) (*calendar.Event, error) {
+func (uc *calendarUsecase) FindByID(ctx context.Context, id string) (Domain, error) {
 	ctx, cancel := context.WithTimeout(ctx, uc.contextTimeout)
 	defer cancel()
 
 	userCredential, err := uc.userCredentialUsecase.FindByUserType(ctx, ctx.Value("userID").(int), "gmail", "true")
 	if err != nil {
-		return nil, err
+		return Domain{}, err
 	}
 
 	res, err := uc.calendarRepository.FindByID(ctx, interfacepkg.Marshal(userCredential.RegistrationDetails), id)
 	if err != nil {
-		return nil, err
+		return Domain{}, err
 	}
 
 	return res, nil
 }
 
-func (uc *calendarUsecase) Store(ctx context.Context, calendarDomain *Domain) (*calendar.Event, error) {
+func (uc *calendarUsecase) Store(ctx context.Context, calendarDomain *Domain) (Domain, error) {
 	ctx, cancel := context.WithTimeout(ctx, uc.contextTimeout)
 	defer cancel()
 
 	userCredential, err := uc.userCredentialUsecase.FindByUserType(ctx, ctx.Value("userID").(int), "gmail", "true")
 	if err != nil {
-		return nil, err
+		return Domain{}, err
 	}
 
-	var attendees []*calendar.EventAttendee
-	for _, a := range calendarDomain.Attendee {
-		attendees = append(attendees, &calendar.EventAttendee{
-			Email: a.Email,
-		})
-	}
-	body := &calendar.Event{
-		Summary:     calendarDomain.Title,
-		Description: calendarDomain.Description,
-		Start: &calendar.EventDateTime{
-			DateTime: calendarDomain.StartAt,
-		},
-		End: &calendar.EventDateTime{
-			DateTime: calendarDomain.EndAt,
-		},
-		Attendees: attendees,
-	}
-
-	if calendarDomain.CreateMeet {
-		body.ConferenceData = &calendar.ConferenceData{
-			CreateRequest: &calendar.CreateConferenceRequest{
-				RequestId: xid.New().String(),
-				ConferenceSolutionKey: &calendar.ConferenceSolutionKey{
-					Type: "hangoutsMeet",
-				},
-			},
-		}
-	}
-
-	res, err := uc.calendarRepository.Add(ctx, interfacepkg.Marshal(userCredential.RegistrationDetails), body)
+	res, err := uc.calendarRepository.Add(ctx, interfacepkg.Marshal(userCredential.RegistrationDetails), calendarDomain)
 	if err != nil {
-		return nil, err
+		return Domain{}, err
 	}
 
 	return res, nil

@@ -3,7 +3,7 @@ package user
 import (
 	"context"
 	"hungry-baby/businesses"
-	"hungry-baby/drivers/minio"
+	minioBusiness "hungry-baby/businesses/minio"
 	"strings"
 	"time"
 )
@@ -11,10 +11,10 @@ import (
 type userUsecase struct {
 	userRepository  Repository
 	contextTimeout  time.Duration
-	minioRepository minio.IMinio
+	minioRepository minioBusiness.Repository
 }
 
-func NewUserUsecase(timeout time.Duration, repo Repository, minioRepo minio.IMinio) Usecase {
+func NewUserUsecase(timeout time.Duration, repo Repository, minioRepo minioBusiness.Repository) Usecase {
 	return &userUsecase{
 		userRepository:  repo,
 		contextTimeout:  timeout,

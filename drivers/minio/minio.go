@@ -2,6 +2,7 @@ package minio
 
 import (
 	"context"
+	minioBusiness "hungry-baby/businesses/minio"
 	"mime/multipart"
 	"net/url"
 	"path/filepath"
@@ -11,13 +12,6 @@ import (
 	"github.com/minio/minio-go/v7"
 )
 
-// IMinio ...
-type IMinio interface {
-	Upload(path string, file *multipart.FileHeader) (string, error)
-	GetFile(objectName string) (string, error)
-	Delete(objectName string) error
-}
-
 type MinioModel struct {
 	Client *minio.Client
 	Bucket string
@@ -26,8 +20,11 @@ type MinioModel struct {
 const defaultDuration = 15
 
 // NewMinioModel ...
-func NewMinioModel(client *minio.Client, bucket string) IMinio {
-	return &MinioModel{Client: client, Bucket: bucket}
+func NewMinioModel(client *minio.Client, bucket string) minioBusiness.Repository {
+	return &MinioModel{
+		Client: client,
+		Bucket: bucket,
+	}
 }
 
 // Upload ...

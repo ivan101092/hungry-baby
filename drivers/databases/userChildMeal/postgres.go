@@ -2,7 +2,6 @@ package userChildMeal
 
 import (
 	"context"
-	"fmt"
 	"hungry-baby/businesses"
 	"hungry-baby/businesses/userChildMeal"
 	"strings"
@@ -93,6 +92,16 @@ func (cr *PostgresRepository) FindByChildMeal(ctx context.Context, userChildID, 
 	return rec.ToDomain(), nil
 }
 
+func (cr *PostgresRepository) FindNextPending(ctx context.Context, userChildID, mealPlanID int) (userChildMeal.Domain, error) {
+	rec := UserChildMeal{}
+
+	query := cr.conn.Debug().Table("user_child_meals")
+	if err := query.Where("user_child_id = ? AND meal_plan_id = ? AND status = ? AND scheduled_at > NOW()", userChildID, mealPlanID, "pending").First(&rec).Error; err != nil {
+		return userChildMeal.Domain{}, err
+	}
+	return rec.ToDomain(), nil
+}
+
 func (cr *PostgresRepository) Store(ctx context.Context, userChildMealDomain *userChildMeal.Domain) (userChildMeal.Domain, error) {
 	rec := FromDomain(userChildMealDomain)
 
@@ -111,7 +120,6 @@ func (cr *PostgresRepository) Store(ctx context.Context, userChildMealDomain *us
 
 func (cr *PostgresRepository) Update(ctx context.Context, userChildMealDomain *userChildMeal.Domain) (userChildMeal.Domain, error) {
 	rec := FromDomain(userChildMealDomain)
-	fmt.Println("calendar", rec.CalendarID)
 
 	result := cr.conn.Table("user_child_meals").Updates(&rec)
 	if result.Error != nil {

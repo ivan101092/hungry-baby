@@ -37,6 +37,7 @@ type Repository interface {
 	Find(ctx context.Context, search string, userChildID, page, perpage int) ([]Domain, int, error)
 	FindByID(ctx context.Context, id int) (Domain, error)
 	FindByChildMeal(ctx context.Context, userChildID, mealPlanID int) (Domain, error)
+	FindNextPending(ctx context.Context, userChildID, mealPlanID int) (Domain, error)
 	Store(ctx context.Context, userChildMealDomain *Domain) (Domain, error)
 	Update(ctx context.Context, userChildMealDomain *Domain) (Domain, error)
 	Delete(ctx context.Context, userChildMealDomain *Domain) (Domain, error)

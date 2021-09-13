@@ -6,6 +6,7 @@ import (
 	"hungry-baby/businesses"
 	calendarBusiness "hungry-baby/businesses/calendar"
 	mealPlanBusiness "hungry-baby/businesses/mealPlan"
+	userBusiness "hungry-baby/businesses/user"
 	userChildBusiness "hungry-baby/businesses/userChild"
 	"time"
 )
@@ -15,17 +16,19 @@ type userChildMealUsecase struct {
 	userChildUsecase        userChildBusiness.Usecase
 	mealPlanUsecase         mealPlanBusiness.Usecase
 	calendarUsecase         calendarBusiness.Usecase
+	userUsecase             userBusiness.Usecase
 	contextTimeout          time.Duration
 }
 
 func NewUserChildMealUsecase(timeout time.Duration, repo Repository,
 	userChildUsecase userChildBusiness.Usecase, mealPlanUsecase mealPlanBusiness.Usecase,
-	calendarUsecase calendarBusiness.Usecase) Usecase {
+	calendarUsecase calendarBusiness.Usecase, userUsecase userBusiness.Usecase) Usecase {
 	return &userChildMealUsecase{
 		userChildMealRepository: repo,
 		userChildUsecase:        userChildUsecase,
 		mealPlanUsecase:         mealPlanUsecase,
 		calendarUsecase:         calendarUsecase,
+		userUsecase:             userUsecase,
 		contextTimeout:          timeout,
 	}
 }
@@ -135,7 +138,7 @@ func (uc *userChildMealUsecase) Store(ctx context.Context, userChildMealDomain *
 		if finishAt.Before(scheduleAt) {
 			return Domain{}, errors.New("Invalid Finish")
 		}
-	} else {
+	} else if userChildMealDomain.Status != "pending" {
 		userChildMealDomain.FinishAt = time.Now().Format(time.RFC3339)
 	}
 
@@ -154,6 +157,46 @@ func (uc *userChildMealUsecase) Store(ctx context.Context, userChildMealDomain *
 	result, err := uc.userChildMealRepository.Store(ctx, userChildMealDomain)
 	if err != nil {
 		return Domain{}, err
+	}
+
+	if userChildMealDomain.Status == "done" {
+		nextPending, err := uc.userChildMealRepository.FindNextPending(ctx, userChildMealDomain.UserChildID, userChildMealDomain.MealPlanID)
+		if nextPending.ID != 0 {
+			return Domain{}, nil
+		}
+
+		user, err := uc.userUsecase.FindByID(ctx, ctx.Value("userID").(int), "")
+		if err != nil {
+			return Domain{}, err
+		}
+
+		if user.Settings.AutoNotification {
+			finishAt, err := time.Parse(time.RFC3339, userChildMealDomain.FinishAt)
+			if err != nil {
+				return Domain{}, err
+			}
+
+			var scheduleAt time.Time
+			if finishAt.Before(time.Now()) && finishAt.Add(time.Duration(mealPlan.Interval)*time.Minute).After(time.Now()) {
+				scheduleAt = finishAt.Add(time.Duration(mealPlan.Interval) * time.Minute)
+			} else {
+				scheduleAt = time.Now().Add(time.Duration(mealPlan.Interval) * time.Minute)
+			}
+
+			_, err = uc.Store(ctx, &Domain{
+				UserID:             userChildMealDomain.UserID,
+				UserChildID:        userChildMealDomain.UserChildID,
+				MealPlanID:         userChildMealDomain.MealPlanID,
+				Name:               userChildMealDomain.Name,
+				SuggestionQuantity: userChildMealDomain.SuggestionQuantity,
+				Quantity:           0,
+				Unit:               userChildMealDomain.Unit,
+				ScheduledAt:        scheduleAt.Format(time.RFC3339),
+			})
+			if err != nil {
+				return Domain{}, err
+			}
+		}
 	}
 
 	return result, nil
@@ -217,7 +260,7 @@ func (uc *userChildMealUsecase) Update(ctx context.Context, userChildMealDomain 
 		if finishAt.Before(scheduleAt) {
 			return Domain{}, errors.New("Invalid Finish")
 		}
-	} else {
+	} else if userChildMealDomain.Status != "pending" {
 		userChildMealDomain.FinishAt = time.Now().Format(time.RFC3339)
 	}
 
@@ -264,6 +307,46 @@ func (uc *userChildMealUsecase) Update(ctx context.Context, userChildMealDomain 
 	result, err := uc.userChildMealRepository.Update(ctx, userChildMealDomain)
 	if err != nil {
 		return Domain{}, err
+	}
+
+	if userChildMealDomain.Status == "done" {
+		nextPending, err := uc.userChildMealRepository.FindNextPending(ctx, userChildMealDomain.UserChildID, userChildMealDomain.MealPlanID)
+		if nextPending.ID != 0 {
+			return Domain{}, nil
+		}
+
+		user, err := uc.userUsecase.FindByID(ctx, ctx.Value("userID").(int), "")
+		if err != nil {
+			return Domain{}, err
+		}
+
+		if user.Settings.AutoNotification {
+			finishAt, err := time.Parse(time.RFC3339, userChildMealDomain.FinishAt)
+			if err != nil {
+				return Domain{}, err
+			}
+
+			var scheduleAt time.Time
+			if finishAt.Before(time.Now()) && finishAt.Add(time.Duration(mealPlan.Interval)*time.Minute).After(time.Now()) {
+				scheduleAt = finishAt.Add(time.Duration(mealPlan.Interval) * time.Minute)
+			} else {
+				scheduleAt = time.Now().Add(time.Duration(mealPlan.Interval) * time.Minute)
+			}
+
+			_, err = uc.Store(ctx, &Domain{
+				UserID:             userChildMealDomain.UserID,
+				UserChildID:        userChildMealDomain.UserChildID,
+				MealPlanID:         userChildMealDomain.MealPlanID,
+				Name:               userChildMealDomain.Name,
+				SuggestionQuantity: userChildMealDomain.SuggestionQuantity,
+				Quantity:           0,
+				Unit:               userChildMealDomain.Unit,
+				ScheduledAt:        scheduleAt.Format(time.RFC3339),
+			})
+			if err != nil {
+				return Domain{}, err
+			}
+		}
 	}
 
 	return result, nil

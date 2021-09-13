@@ -15,6 +15,7 @@ type UserChildMeal struct {
 	Unit               string    `json:"unit"`
 	ScheduledAt        string    `json:"schedule_at"`
 	FinishAt           string    `json:"finish_at"`
+	CalendarID         string    `json:"calendar_id"`
 	Status             string    `json:"status"`
 	CreatedAt          time.Time `json:"created_at"`
 	UpdatedAt          time.Time `json:"updated_at"`
@@ -31,6 +32,7 @@ func FromDomain(domain userChildMeal.Domain) UserChildMeal {
 		Unit:               domain.Unit,
 		ScheduledAt:        domain.ScheduledAt,
 		FinishAt:           domain.FinishAt,
+		CalendarID:         domain.CalendarID,
 		Status:             domain.Status,
 		CreatedAt:          domain.CreatedAt,
 		UpdatedAt:          domain.UpdatedAt,

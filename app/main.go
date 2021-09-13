@@ -133,7 +133,7 @@ func main() {
 	userChildCtrl := _userChildController.NewUserChildController(userChildUsecase)
 
 	userChildMealRepo := _dbFactory.NewUserChildMealRepository(db)
-	userChildMealUsecase := _userChildMealUsecase.NewUserChildMealUsecase(timeoutContext, userChildMealRepo, userChildUsecase, mealPlanUsecase)
+	userChildMealUsecase := _userChildMealUsecase.NewUserChildMealUsecase(timeoutContext, userChildMealRepo, userChildUsecase, mealPlanUsecase, calendarUsecase)
 	userChildMealCtrl := _userChildMealController.NewUserChildMealController(userChildMealUsecase)
 
 	routesInit := _routes.ControllerList{

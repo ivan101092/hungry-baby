@@ -16,6 +16,7 @@ type Domain struct {
 	Unit               string
 	ScheduledAt        string
 	FinishAt           string
+	CalendarID         string
 	Status             string
 	CreatedAt          time.Time
 	UpdatedAt          time.Time

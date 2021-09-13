@@ -17,6 +17,7 @@ type UserChildMeal struct {
 	Unit               string
 	ScheduledAt        time.Time
 	FinishAt           time.Time
+	CalendarID         string
 	Status             string
 	postgres.BaseModel
 }
@@ -35,6 +36,7 @@ func FromDomain(domain *userChildMealUsecase.Domain) *UserChildMeal {
 		Unit:               domain.Unit,
 		ScheduledAt:        scheduleAt,
 		FinishAt:           finishAt,
+		CalendarID:         domain.CalendarID,
 		Status:             domain.Status,
 	}
 }
@@ -50,6 +52,7 @@ func (rec *UserChildMeal) ToDomain() userChildMeal.Domain {
 		Unit:               rec.Unit,
 		ScheduledAt:        rec.ScheduledAt.Format(time.RFC3339),
 		FinishAt:           rec.FinishAt.Format(time.RFC3339),
+		CalendarID:         rec.CalendarID,
 		Status:             rec.Status,
 		CreatedAt:          rec.CreatedAt,
 		UpdatedAt:          rec.UpdatedAt,

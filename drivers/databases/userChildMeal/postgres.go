@@ -2,6 +2,7 @@ package userChildMeal
 
 import (
 	"context"
+	"fmt"
 	"hungry-baby/businesses"
 	"hungry-baby/businesses/userChildMeal"
 	"strings"
@@ -110,6 +111,7 @@ func (cr *PostgresRepository) Store(ctx context.Context, userChildMealDomain *us
 
 func (cr *PostgresRepository) Update(ctx context.Context, userChildMealDomain *userChildMeal.Domain) (userChildMeal.Domain, error) {
 	rec := FromDomain(userChildMealDomain)
+	fmt.Println("calendar", rec.CalendarID)
 
 	result := cr.conn.Table("user_child_meals").Updates(&rec)
 	if result.Error != nil {

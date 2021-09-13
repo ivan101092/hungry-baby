@@ -8,14 +8,13 @@ import (
 )
 
 func FromDomain(domain *calendarUsecase.Domain) *calendar.Event {
-	var calendarDomain *calendar.Event
 	var attendees []*calendar.EventAttendee
 	for _, a := range domain.Attendee {
 		attendees = append(attendees, &calendar.EventAttendee{
 			Email: a.Email,
 		})
 	}
-	body := &calendar.Event{
+	calendarDomain := &calendar.Event{
 		Summary:     domain.Title,
 		Description: domain.Description,
 		Start: &calendar.EventDateTime{
@@ -28,7 +27,7 @@ func FromDomain(domain *calendarUsecase.Domain) *calendar.Event {
 	}
 
 	if domain.CreateMeet {
-		body.ConferenceData = &calendar.ConferenceData{
+		calendarDomain.ConferenceData = &calendar.ConferenceData{
 			CreateRequest: &calendar.CreateConferenceRequest{
 				RequestId: xid.New().String(),
 				ConferenceSolutionKey: &calendar.ConferenceSolutionKey{

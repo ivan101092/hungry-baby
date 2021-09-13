@@ -146,6 +146,7 @@ CREATE TABLE IF NOT EXISTS user_child_meals (
 	unit TEXT NOT NULL CHECK (char_length(unit) <= 20) DEFAULT '',
 	scheduled_at TIMESTAMP WITH TIME ZONE,
 	finish_at TIMESTAMP WITH TIME ZONE,
+	calendar_id TEXT NOT NULL CHECK (char_length(calendar_id) <= 100) DEFAULT '',
 	status TEXT NOT NULL CHECK (char_length(status) <= 20) DEFAULT '', -- pending, done
 	created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,

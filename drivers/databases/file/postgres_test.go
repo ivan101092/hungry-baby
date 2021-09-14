@@ -3,6 +3,7 @@ package file_test
 import (
 	"context"
 	"database/sql"
+	file "hungry-baby/businesses/file"
 	_fileRepo "hungry-baby/drivers/databases/file"
 	"testing"
 
@@ -116,7 +117,7 @@ func TestFindByID(t *testing.T) {
 
 		assert.Nil(t, err)
 		assert.Equal(t, id, result.ID)
-		assert.Equal(t, result.Type, "Sport")
+		assert.Equal(t, result.Type, "user_profile")
 	})
 
 	t.Run("test case 2 : invalid case", func(t *testing.T) {
@@ -124,5 +125,44 @@ func TestFindByID(t *testing.T) {
 
 		assert.NotNil(t, err)
 		assert.Equal(t, 0, result.ID)
+	})
+}
+
+func TestStore(t *testing.T) {
+	tearDown, db := tearUp(t)
+	defer tearDown(t, db)
+
+	t.Run("test case 1 : valid case", func(t *testing.T) {
+		domain := file.Domain{
+			Type:       "user_profile",
+			URL:        "file.jpg",
+			FullURL:    "https://s3.hungrybaby.com/file.jpg",
+			UserUpload: "1",
+		}
+		result, err := s.Repository.Store(context.Background(), &domain)
+
+		assert.Nil(t, err)
+		assert.Equal(t, 5, result.ID)
+		assert.Equal(t, result.Type, "user_profile")
+	})
+}
+
+func TestDelete(t *testing.T) {
+	tearDown, db := tearUp(t)
+	defer tearDown(t, db)
+
+	t.Run("test case 1 : valid case", func(t *testing.T) {
+		id := 1
+		domain := file.Domain{
+			ID:         1,
+			Type:       "user_profile",
+			URL:        "file.jpg",
+			FullURL:    "https://s3.hungrybaby.com/file.jpg",
+			UserUpload: "1",
+		}
+		result, err := s.Repository.Delete(context.Background(), &domain)
+
+		assert.Nil(t, err)
+		assert.Equal(t, id, result.ID)
 	})
 }

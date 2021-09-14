@@ -121,7 +121,7 @@ func (cr *PostgresRepository) Store(ctx context.Context, userChildMealDomain *us
 func (cr *PostgresRepository) Update(ctx context.Context, userChildMealDomain *userChildMeal.Domain) (userChildMeal.Domain, error) {
 	rec := FromDomain(userChildMealDomain)
 
-	result := cr.conn.Table("user_child_meals").Updates(&rec)
+	result := cr.conn.Table("user_child_meals").Save(&rec)
 	if result.Error != nil {
 		return userChildMeal.Domain{}, result.Error
 	}

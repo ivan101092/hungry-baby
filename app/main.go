@@ -58,7 +58,7 @@ func dbMigrate(db *gorm.DB) {
 }
 
 func main() {
-	configApp := _config.GetConfig()
+	configApp := _config.GetConfig("./config/")
 	configDB := _dbDriver.ConfigDB{
 		DB_Username: configApp.Database.User,
 		DB_Password: configApp.Database.Pass,

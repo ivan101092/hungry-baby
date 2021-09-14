@@ -38,10 +38,10 @@ type Config struct {
 	}
 }
 
-func GetConfig() Config {
+func GetConfig(path string) Config {
 	viper.SetConfigName("config")
 	viper.SetConfigType("json")
-	viper.AddConfigPath("./config/")
+	viper.AddConfigPath(path)
 	err := viper.ReadInConfig()
 	if err != nil {
 		panic(err)

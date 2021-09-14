@@ -28,7 +28,7 @@ var s SQLTest
 
 func SetupSuite(t *testing.T) *sql.DB {
 	//SETUP with actual DB
-	configApp := _config.GetConfig()
+	configApp := _config.GetConfig("../../../app/config/")
 	configDB := _dbDriver.ConfigDB{
 		DB_Username: configApp.Database.User,
 		DB_Password: configApp.Database.Pass,

@@ -2,8 +2,8 @@ package province
 
 import (
 	"context"
+	"database/sql"
 	"hungry-baby/businesses"
-	"strings"
 	"time"
 )
 
@@ -83,7 +83,7 @@ func (uc *provinceUsecase) Store(ctx context.Context, provinceDomain *Domain) (D
 
 	exist, err := uc.provinceRepository.FindByCode(ctx, provinceDomain.Code, "")
 	if err != nil {
-		if !strings.Contains(err.Error(), "not found") {
+		if err != sql.ErrNoRows && err.Error() != "record not found" {
 			return Domain{}, err
 		}
 	}
@@ -105,7 +105,7 @@ func (uc *provinceUsecase) Update(ctx context.Context, provinceDomain *Domain) (
 
 	exist, err := uc.provinceRepository.FindByCode(ctx, provinceDomain.Code, "")
 	if err != nil {
-		if !strings.Contains(err.Error(), "not found") {
+		if err != sql.ErrNoRows && err.Error() != "record not found" {
 			return Domain{}, err
 		}
 	}

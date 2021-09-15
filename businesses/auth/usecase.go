@@ -8,7 +8,6 @@ import (
 	userBusiness "hungry-baby/businesses/user"
 	userCredentialBusiness "hungry-baby/businesses/userCredential"
 	"hungry-baby/drivers/thirdparties/google"
-	googleHelpers "hungry-baby/helpers/google"
 	"hungry-baby/helpers/interfacepkg"
 	"io/ioutil"
 	"log"
@@ -50,8 +49,7 @@ func (uc *authUsecase) GetGoogleLoginURL(ctx context.Context) (string, error) {
 // VerifyGoogleCode ...
 func (uc *authUsecase) VerifyGoogleCode(ctx context.Context, code string) (Domain, error) {
 	scopes := google.CalendarScopes
-	tokenPath := "../files/" + xid.New().String() + ".json"
-	err := uc.googleRepository.SaveTokenFromWeb("", scopes, code, tokenPath)
+	tokenPath, err := uc.googleRepository.SaveTokenFromWeb("", scopes, code, "../files/")
 	if err != nil {
 		return Domain{}, err
 	}
@@ -66,13 +64,13 @@ func (uc *authUsecase) VerifyGoogleCode(ctx context.Context, code string) (Domai
 	defer os.Remove(tokenPath)
 
 	// Verify token scopes
-	err = googleHelpers.VerifyTokenScope(token.AccessToken, scopes)
+	err = uc.googleRepository.VerifyTokenScope(token.AccessToken, scopes)
 	if err != nil {
 		return Domain{}, err
 	}
 
 	// Verify token
-	gmailUser, err := googleHelpers.GetGoogleProfile(token.AccessToken)
+	gmailUser, err := uc.googleRepository.GetGoogleProfile(token.AccessToken)
 	if err != nil {
 		return Domain{}, err
 	}

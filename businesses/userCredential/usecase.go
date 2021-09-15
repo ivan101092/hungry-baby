@@ -2,8 +2,8 @@ package userCredential
 
 import (
 	"context"
+	"database/sql"
 	"hungry-baby/businesses"
-	"strings"
 	"time"
 )
 
@@ -96,7 +96,7 @@ func (uc *userCredentialUsecase) Store(ctx context.Context, userCredentialDomain
 	exist, err := uc.userCredentialRepository.FindByUserType(ctx, userCredentialDomain.UserID,
 		userCredentialDomain.Type, "")
 	if err != nil {
-		if !strings.Contains(err.Error(), "not found") {
+		if err != sql.ErrNoRows && err.Error() != "record not found" {
 			return Domain{}, err
 		}
 	}
@@ -119,7 +119,7 @@ func (uc *userCredentialUsecase) Update(ctx context.Context, userCredentialDomai
 	exist, err := uc.userCredentialRepository.FindByUserType(ctx, userCredentialDomain.UserID,
 		userCredentialDomain.Type, "")
 	if err != nil {
-		if !strings.Contains(err.Error(), "not found") {
+		if err != sql.ErrNoRows && err.Error() != "record not found" {
 			return Domain{}, err
 		}
 	}

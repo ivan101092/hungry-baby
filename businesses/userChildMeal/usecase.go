@@ -95,6 +95,12 @@ func (uc *userChildMealUsecase) Store(ctx context.Context, userChildMealDomain *
 	ctx, cancel := context.WithTimeout(ctx, uc.contextTimeout)
 	defer cancel()
 
+	if userChildMealDomain.Status == "done" && userChildMealDomain.Quantity == 0 {
+		return Domain{}, errors.New("Invalid quantity")
+	} else if userChildMealDomain.Status == "done" && userChildMealDomain.FinishAt == "" {
+		return Domain{}, errors.New("Invalid finish at")
+	}
+
 	userChild, err := uc.userChildUsecase.FindByID(ctx, userChildMealDomain.UserChildID)
 	if err != nil {
 		return Domain{}, err
@@ -183,7 +189,7 @@ func (uc *userChildMealUsecase) Store(ctx context.Context, userChildMealDomain *
 				scheduleAt = time.Now().Add(time.Duration(mealPlan.Interval) * time.Minute)
 			}
 
-			_, err = uc.Store(ctx, &Domain{
+			_, err = uc.userChildMealRepository.Store(ctx, &Domain{
 				UserID:             userChildMealDomain.UserID,
 				UserChildID:        userChildMealDomain.UserChildID,
 				MealPlanID:         userChildMealDomain.MealPlanID,
@@ -333,7 +339,7 @@ func (uc *userChildMealUsecase) Update(ctx context.Context, userChildMealDomain 
 				scheduleAt = time.Now().Add(time.Duration(mealPlan.Interval) * time.Minute)
 			}
 
-			_, err = uc.Store(ctx, &Domain{
+			_, err = uc.userChildMealRepository.Store(ctx, &Domain{
 				UserID:             userChildMealDomain.UserID,
 				UserChildID:        userChildMealDomain.UserChildID,
 				MealPlanID:         userChildMealDomain.MealPlanID,

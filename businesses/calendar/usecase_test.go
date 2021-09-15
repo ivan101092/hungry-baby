@@ -183,162 +183,143 @@ func TestFindByID(t *testing.T) {
 	})
 }
 
-// func TestStoreMinioErr(t *testing.T) {
-// 	t.Run("test case 3, minio error", func(t *testing.T) {
-// 		domain := calendar.Domain{
-// 			ID:         1,
-// 			Type:       "calendar",
-// 			URL:        "calendar.jpg",
-// 			FullURL:    "",
-// 			UserUpload: "1",
-// 		}
-// 		ctx := context.WithValue(context.Background(), "userID", 1)
-// 		errError := errors.New("(Minio) Error")
-// 		calendarRepository.On("Store", mock.Anything, mock.AnythingOfType("*calendar.Domain")).Return(domain, nil).Once()
-// 		minioRepository.On("GetCalendar", mock.AnythingOfType("string")).Return("", errError).Once()
-// 		result, err := calendarUsecase.Store(ctx, &domain)
+func TestStore(t *testing.T) {
+	t.Run("test case 1, valid test", func(t *testing.T) {
+		var (
+			calendarRepository    calendarMock.Repository
+			userCredentialUsecase userCredentialMock.Usecase
+		)
+		calendarUsecase := calendar.NewCalendarUsecase(2, &calendarRepository, &userCredentialUsecase)
 
-// 		assert.Equal(t, result, calendar.Domain{})
-// 		assert.Equal(t, errError, err)
-// 	})
-// }
+		domain := calendar.Domain{
+			ID:          "1",
+			Title:       "calendar",
+			Description: "desc",
+			StartAt:     "2021-10-10",
+			EndAt:       "2021-10-10",
+			Attendee:    []calendar.DomainAttendee{},
+			CreateMeet:  true,
+			MeetURL:     "https://meet.com/google",
+		}
+		ctx := context.WithValue(context.Background(), "userID", 1)
+		userCredentialUsecase.On("FindByUserType", mock.Anything, mock.AnythingOfType("int"),
+			mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(userCredential.Domain{}, nil).Once()
+		calendarRepository.On("Add", mock.Anything, interfacepkg.Marshal(userCredential.DomainRegistrationDetails{}),
+			mock.AnythingOfType("*calendar.Domain")).Return(domain, nil).Once()
+		result, err := calendarUsecase.Store(ctx, &domain)
 
-// func TestUpload(t *testing.T) {
-// 	t.Run("test case 3, repository error", func(t *testing.T) {
-// 		errNotFound := errors.New("(Repo) ID Not Found")
-// 		var calendarHeader *multipart.CalendarHeader
-// 		domain := calendar.Domain{
-// 			Type:       "calendar",
-// 			URL:        "calendar.jpg",
-// 			FullURL:    "https://s3.hungrybaby.com/calendar.jpg",
-// 			UserUpload: "1",
-// 		}
-// 		ctx := context.WithValue(context.Background(), "userID", 1)
-// 		minioRepository.On("Upload", mock.AnythingOfType("string"), mock.Anything).Return("calendar.jpg", nil).Once()
-// 		domainStore := calendar.Domain{
-// 			Type:       "calendar",
-// 			URL:        "calendar.jpg",
-// 			FullURL:    "",
-// 			UserUpload: "1",
-// 		}
-// 		calendarRepository.On("Store", mock.Anything, &domainStore).Return(calendar.Domain{}, errNotFound).Once()
-// 		minioRepository.On("GetCalendar", mock.AnythingOfType("string")).Return("https://s3.hungrybaby.com/calendar.jpg", nil).Once()
-// 		result, err := calendarUsecase.Upload(ctx, domain.Type, "", calendarHeader)
+		assert.Equal(t, result, domain)
+		assert.Nil(t, err)
+	})
 
-// 		assert.Equal(t, result, calendar.Domain{})
-// 		assert.Equal(t, errNotFound, err)
-// 	})
+	t.Run("test case 2, error credential", func(t *testing.T) {
+		var (
+			calendarRepository    calendarMock.Repository
+			userCredentialUsecase userCredentialMock.Usecase
+		)
+		calendarUsecase := calendar.NewCalendarUsecase(2, &calendarRepository, &userCredentialUsecase)
 
-// 	t.Run("test case 1, valid test", func(t *testing.T) {
-// 		var calendarHeader *multipart.CalendarHeader
-// 		domain := calendar.Domain{
-// 			Type:       "calendar",
-// 			URL:        "calendar.jpg",
-// 			FullURL:    "https://s3.hungrybaby.com/calendar.jpg",
-// 			UserUpload: "1",
-// 		}
-// 		ctx := context.WithValue(context.Background(), "userID", 1)
-// 		minioRepository.On("Upload", mock.AnythingOfType("string"), mock.Anything).Return("calendar.jpg", nil).Once()
-// 		domainStore := calendar.Domain{
-// 			Type:       "calendar",
-// 			URL:        "calendar.jpg",
-// 			FullURL:    "",
-// 			UserUpload: "1",
-// 		}
-// 		calendarRepository.On("Store", mock.Anything, &domainStore).Return(domain, nil).Once()
-// 		minioRepository.On("GetCalendar", mock.AnythingOfType("string")).Return("https://s3.hungrybaby.com/calendar.jpg", nil).Once()
-// 		result, err := calendarUsecase.Upload(ctx, domain.Type, "", calendarHeader)
+		domain := calendar.Domain{
+			ID:          "1",
+			Title:       "calendar",
+			Description: "desc",
+			StartAt:     "2021-10-10",
+			EndAt:       "2021-10-10",
+			Attendee:    []calendar.DomainAttendee{},
+			CreateMeet:  true,
+			MeetURL:     "https://meet.com/google",
+		}
+		errCredential := errors.New("Error Credential")
+		ctx := context.WithValue(context.Background(), "userID", 1)
+		userCredentialUsecase.On("FindByUserType", mock.Anything, mock.AnythingOfType("int"),
+			mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(userCredential.Domain{}, errCredential).Once()
+		calendarRepository.On("Add", mock.Anything, interfacepkg.Marshal(userCredential.DomainRegistrationDetails{}),
+			mock.AnythingOfType("*calendar.Domain")).Return(domain, nil).Once()
+		_, err := calendarUsecase.Store(ctx, &domain)
 
-// 		assert.Equal(t, result, domain)
-// 		assert.Nil(t, err)
-// 	})
+		assert.Equal(t, errCredential, err)
+	})
 
-// 	t.Run("test case 2, minio error", func(t *testing.T) {
-// 		errError := errors.New("(Minio) Error")
-// 		var calendarHeader *multipart.CalendarHeader
-// 		domain := calendar.Domain{
-// 			Type:       "calendar",
-// 			URL:        "calendar.jpg",
-// 			FullURL:    "https://s3.hungrybaby.com/calendar.jpg",
-// 			UserUpload: "1",
-// 		}
-// 		ctx := context.WithValue(context.Background(), "userID", 1)
-// 		minioRepository.On("Upload", mock.AnythingOfType("string"), mock.Anything).Return("", errError).Once()
-// 		domainStore := calendar.Domain{
-// 			Type:       "calendar",
-// 			URL:        "calendar.jpg",
-// 			FullURL:    "",
-// 			UserUpload: "1",
-// 		}
-// 		calendarRepository.On("Store", mock.Anything, &domainStore).Return(domainStore, nil).Once()
-// 		minioRepository.On("GetCalendar", mock.AnythingOfType("string")).Return("https://s3.hungrybaby.com/calendar.jpg", nil).Once()
-// 		result, err := calendarUsecase.Upload(ctx, domain.Type, "", calendarHeader)
+	t.Run("test case 3, error repo", func(t *testing.T) {
+		var (
+			calendarRepository    calendarMock.Repository
+			userCredentialUsecase userCredentialMock.Usecase
+		)
+		calendarUsecase := calendar.NewCalendarUsecase(2, &calendarRepository, &userCredentialUsecase)
 
-// 		assert.Equal(t, result, calendar.Domain{})
-// 		assert.Equal(t, err, errError)
-// 	})
-// }
+		domain := calendar.Domain{
+			ID:          "1",
+			Title:       "calendar",
+			Description: "desc",
+			StartAt:     "2021-10-10",
+			EndAt:       "2021-10-10",
+			Attendee:    []calendar.DomainAttendee{},
+			CreateMeet:  true,
+			MeetURL:     "https://meet.com/google",
+		}
+		errRepo := errors.New("Error Repo")
+		ctx := context.WithValue(context.Background(), "userID", 1)
+		userCredentialUsecase.On("FindByUserType", mock.Anything, mock.AnythingOfType("int"),
+			mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(userCredential.Domain{}, nil).Once()
+		calendarRepository.On("Add", mock.Anything, interfacepkg.Marshal(userCredential.DomainRegistrationDetails{}),
+			mock.AnythingOfType("*calendar.Domain")).Return(calendar.Domain{}, errRepo).Once()
+		_, err := calendarUsecase.Store(ctx, &domain)
 
-// func TestDelete(t *testing.T) {
-// 	t.Run("test case 1, valid test", func(t *testing.T) {
-// 		domain := calendar.Domain{
-// 			ID:         1,
-// 			Type:       "calendar",
-// 			URL:        "calendar.jpg",
-// 			FullURL:    "https://s3.hungrybaby.com/calendar.jpg",
-// 			UserUpload: "1",
-// 		}
-// 		ctx := context.WithValue(context.Background(), "userID", 1)
-// 		calendarRepository.On("FindByID", mock.Anything, mock.AnythingOfType("int")).Return(domain, nil).Once()
-// 		minioRepository.On("Delete", mock.AnythingOfType("string")).Return(nil).Once()
-// 		calendarRepository.On("Delete", mock.Anything, mock.AnythingOfType("*calendar.Domain")).Return(domain, nil).Once()
-// 		result, err := calendarUsecase.Delete(ctx, &domain)
+		assert.Equal(t, errRepo, err)
+	})
+}
 
-// 		assert.Equal(t, result, domain)
-// 		assert.Nil(t, err)
-// 	})
+func TestDelete(t *testing.T) {
+	t.Run("test case 1, valid test", func(t *testing.T) {
+		var (
+			calendarRepository    calendarMock.Repository
+			userCredentialUsecase userCredentialMock.Usecase
+		)
+		calendarUsecase := calendar.NewCalendarUsecase(2, &calendarRepository, &userCredentialUsecase)
 
-// 	t.Run("test case 2, repo error", func(t *testing.T) {
-// 		errError := errors.New("(Repo) Error")
-// 		domain := calendar.Domain{
-// 			ID:         1,
-// 			Type:       "calendar",
-// 			URL:        "calendar.jpg",
-// 			FullURL:    "https://s3.hungrybaby.com/calendar.jpg",
-// 			UserUpload: "1",
-// 		}
-// 		ctx := context.WithValue(context.Background(), "userID", 1)
-// 		calendarRepository.On("FindByID", mock.Anything, mock.AnythingOfType("int")).Return(calendar.Domain{}, errError).Once()
-// 		minioRepository.On("Delete", mock.AnythingOfType("string")).Return(nil).Once()
-// 		calendarRepository.On("Delete", mock.Anything, mock.AnythingOfType("*calendar.Domain")).Return(domain, nil).Once()
-// 		result, err := calendarUsecase.Delete(ctx, &domain)
+		ctx := context.WithValue(context.Background(), "userID", 1)
+		userCredentialUsecase.On("FindByUserType", mock.Anything, mock.AnythingOfType("int"),
+			mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(userCredential.Domain{}, nil).Once()
+		calendarRepository.On("Delete", mock.Anything, interfacepkg.Marshal(userCredential.DomainRegistrationDetails{}),
+			mock.AnythingOfType("string")).Return(nil).Once()
+		err := calendarUsecase.Delete(ctx, "1")
 
-// 		assert.Equal(t, result, calendar.Domain{})
-// 		assert.Equal(t, err, errError)
-// 	})
+		assert.Nil(t, err)
+	})
 
-// 	// t.Run("test case 3, repository error", func(t *testing.T) {
-// 	// 	errNotFound := errors.New("(Repo) ID Not Found")
-// 	// 	var calendarHeader *multipart.CalendarHeader
-// 	// 	domain := calendar.Domain{
-// 	// 		Type:       "calendar",
-// 	// 		URL:        "calendar.jpg",
-// 	// 		FullURL:    "https://s3.hungrybaby.com/calendar.jpg",
-// 	// 		UserUpload: "1",
-// 	// 	}
-// 	// 	ctx := context.WithValue(context.Background(), "userID", 1)
-// 	// 	minioRepository.On("Upload", mock.AnythingOfType("string"), mock.Anything).Return("calendar.jpg", nil).Once()
-// 	// 	domainStore := calendar.Domain{
-// 	// 		Type:       "calendar",
-// 	// 		URL:        "calendar.jpg",
-// 	// 		FullURL:    "",
-// 	// 		UserUpload: "1",
-// 	// 	}
-// 	// 	calendarRepository.On("Store", mock.Anything, &domainStore).Return(calendar.Domain{}, errNotFound).Once()
-// 	// 	minioRepository.On("GetCalendar", mock.AnythingOfType("string")).Return("https://s3.hungrybaby.com/calendar.jpg", nil).Once()
-// 	// 	result, err := calendarUsecase.Upload(ctx, domain.Type, "", calendarHeader)
+	t.Run("test case 2, error credential", func(t *testing.T) {
+		var (
+			calendarRepository    calendarMock.Repository
+			userCredentialUsecase userCredentialMock.Usecase
+		)
+		calendarUsecase := calendar.NewCalendarUsecase(2, &calendarRepository, &userCredentialUsecase)
 
-// 	// 	assert.Equal(t, result, calendar.Domain{})
-// 	// 	assert.Equal(t, errNotFound, err)
-// 	// })
-// }
+		errCredential := errors.New("Error Credential")
+		ctx := context.WithValue(context.Background(), "userID", 1)
+		userCredentialUsecase.On("FindByUserType", mock.Anything, mock.AnythingOfType("int"),
+			mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(userCredential.Domain{}, errCredential).Once()
+		calendarRepository.On("Delete", mock.Anything, interfacepkg.Marshal(userCredential.DomainRegistrationDetails{}),
+			mock.AnythingOfType("string")).Return(nil).Once()
+		err := calendarUsecase.Delete(ctx, "1")
+
+		assert.Equal(t, errCredential, err)
+	})
+
+	t.Run("test case 3, error repo", func(t *testing.T) {
+		var (
+			calendarRepository    calendarMock.Repository
+			userCredentialUsecase userCredentialMock.Usecase
+		)
+		calendarUsecase := calendar.NewCalendarUsecase(2, &calendarRepository, &userCredentialUsecase)
+
+		errRepo := errors.New("Error Repo")
+		ctx := context.WithValue(context.Background(), "userID", 1)
+		userCredentialUsecase.On("FindByUserType", mock.Anything, mock.AnythingOfType("int"),
+			mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(userCredential.Domain{}, nil).Once()
+		calendarRepository.On("Delete", mock.Anything, interfacepkg.Marshal(userCredential.DomainRegistrationDetails{}),
+			mock.AnythingOfType("string")).Return(errRepo).Once()
+		err := calendarUsecase.Delete(ctx, "1")
+
+		assert.Equal(t, errRepo, err)
+	})
+}

@@ -2,8 +2,8 @@ package city
 
 import (
 	"context"
+	"database/sql"
 	"hungry-baby/businesses"
-	"strings"
 	"time"
 )
 
@@ -83,7 +83,7 @@ func (uc *cityUsecase) Store(ctx context.Context, cityDomain *Domain) (Domain, e
 
 	exist, err := uc.cityRepository.FindByCode(ctx, cityDomain.Code, "")
 	if err != nil {
-		if !strings.Contains(err.Error(), "not found") {
+		if err != sql.ErrNoRows && err.Error() != "record not found" {
 			return Domain{}, err
 		}
 	}
@@ -105,7 +105,7 @@ func (uc *cityUsecase) Update(ctx context.Context, cityDomain *Domain) (Domain, 
 
 	exist, err := uc.cityRepository.FindByCode(ctx, cityDomain.Code, "")
 	if err != nil {
-		if !strings.Contains(err.Error(), "not found") {
+		if err != sql.ErrNoRows && err.Error() != "record not found" {
 			return Domain{}, err
 		}
 	}

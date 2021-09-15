@@ -9,6 +9,29 @@ type Repository struct {
 	mock.Mock
 }
 
+// GetGoogleProfile provides a mock function with given fields: token
+func (_m *Repository) GetGoogleProfile(token string) (map[string]interface{}, error) {
+	ret := _m.Called(token)
+
+	var r0 map[string]interface{}
+	if rf, ok := ret.Get(0).(func(string) map[string]interface{}); ok {
+		r0 = rf(token)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(map[string]interface{})
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(string) error); ok {
+		r1 = rf(token)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetTokenFromWeb provides a mock function with given fields: redirectURL, scopes
 func (_m *Repository) GetTokenFromWeb(redirectURL string, scopes []string) (string, error) {
 	ret := _m.Called(redirectURL, scopes)
@@ -23,6 +46,29 @@ func (_m *Repository) GetTokenFromWeb(redirectURL string, scopes []string) (stri
 	var r1 error
 	if rf, ok := ret.Get(1).(func(string, []string) error); ok {
 		r1 = rf(redirectURL, scopes)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetTokenInfo provides a mock function with given fields: token
+func (_m *Repository) GetTokenInfo(token string) (map[string]interface{}, error) {
+	ret := _m.Called(token)
+
+	var r0 map[string]interface{}
+	if rf, ok := ret.Get(0).(func(string) map[string]interface{}); ok {
+		r0 = rf(token)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(map[string]interface{})
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(string) error); ok {
+		r1 = rf(token)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -45,12 +91,33 @@ func (_m *Repository) SaveRefreshToken(redirectURL string, scopes []string, toke
 }
 
 // SaveTokenFromWeb provides a mock function with given fields: redirectURL, scopes, authCode, destinationPath
-func (_m *Repository) SaveTokenFromWeb(redirectURL string, scopes []string, authCode string, destinationPath string) error {
+func (_m *Repository) SaveTokenFromWeb(redirectURL string, scopes []string, authCode string, destinationPath string) (string, error) {
 	ret := _m.Called(redirectURL, scopes, authCode, destinationPath)
 
-	var r0 error
-	if rf, ok := ret.Get(0).(func(string, []string, string, string) error); ok {
+	var r0 string
+	if rf, ok := ret.Get(0).(func(string, []string, string, string) string); ok {
 		r0 = rf(redirectURL, scopes, authCode, destinationPath)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(string, []string, string, string) error); ok {
+		r1 = rf(redirectURL, scopes, authCode, destinationPath)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// VerifyTokenScope provides a mock function with given fields: token, allowedScopes
+func (_m *Repository) VerifyTokenScope(token string, allowedScopes []string) error {
+	ret := _m.Called(token, allowedScopes)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(string, []string) error); ok {
+		r0 = rf(token, allowedScopes)
 	} else {
 		r0 = ret.Error(0)
 	}

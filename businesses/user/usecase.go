@@ -2,9 +2,9 @@ package user
 
 import (
 	"context"
+	"database/sql"
 	"hungry-baby/businesses"
 	minioBusiness "hungry-baby/businesses/minio"
-	"strings"
 	"time"
 )
 
@@ -105,7 +105,7 @@ func (uc *userUsecase) Store(ctx context.Context, userDomain *Domain) (Domain, e
 
 	exist, err := uc.userRepository.FindByEmail(ctx, userDomain.Email, "")
 	if err != nil {
-		if !strings.Contains(err.Error(), "not found") {
+		if err != sql.ErrNoRows && err.Error() != "record not found" {
 			return Domain{}, err
 		}
 	}
@@ -131,6 +131,16 @@ func (uc *userUsecase) Update(ctx context.Context, userDomain *Domain) (Domain, 
 	}
 	userDomain.Code = exist.Code
 	userDomain.Email = exist.Email
+
+	existEmail, err := uc.userRepository.FindByEmail(ctx, userDomain.Email, "")
+	if err != nil {
+		if err != sql.ErrNoRows && err.Error() != "record not found" {
+			return Domain{}, err
+		}
+	}
+	if existEmail.ID != 0 && existEmail.ID != userDomain.ID {
+		return Domain{}, businesses.ErrDuplicateData
+	}
 
 	result, err := uc.userRepository.Update(ctx, userDomain)
 	if err != nil {
